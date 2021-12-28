@@ -31,8 +31,15 @@ static char *ngx_http_add_params(ngx_conf_t *cf, ngx_command_t *cmd,
 typedef struct
 {
     ngx_array_t *params;
-    //ngx_array_t *my_keyval;
+    
 } ngx_http_fs_sdk_init_loc_conf_t;
+
+typedef struct
+{
+    ngx_array_t *paramsGetFlags;
+
+} ngx_http_fs_sdk_get_all_flags_loc_conf_t;
+
 
 static void *
 ngx_http_fs_sdk_init_create_loc_conf(ngx_conf_t *cf)
@@ -57,6 +64,12 @@ static int polling_interval = 0;
 static char *log_level = NULL;
 static char *visitor_id = NULL;
 static char *context = NULL; */
+static ngx_str_t env_id_string;
+static ngx_str_t api_key_string;
+static ngx_str_t timeout_string;
+static ngx_str_t visitor_id_string;
+static ngx_str_t context_string;
+
 static void (*init_flagship)(char *, char *, int, char *);
 static char *(*get_all_flags)(char *, char *);
 #endif
@@ -71,24 +84,22 @@ static ngx_command_t ngx_http_fs_sdk_commands[] = {
      NGX_HTTP_SRV_CONF | NGX_CONF_TAKE3,                   /* location context and takes
                                             no arguments*/
      ngx_http_add_params,                             /* configuration setup function */
-     NGX_HTTP_LOC_CONF_OFFSET,                             /* No offset. Only one context is supported. */
+     NGX_HTTP_SRV_CONF_OFFSET,                             /* No offset. Only one context is supported. */
      offsetof(ngx_http_fs_sdk_init_loc_conf_t, params), /* No offset when storing the module configuration on struct. */
      NULL},
 
      {ngx_string("get_all_flags"),                                /* directive */
-     NGX_HTTP_LOC_CONF | NGX_CONF_NOARGS,                   /* location context and takes
+     NGX_HTTP_LOC_CONF | NGX_CONF_TAKE2,                   /* location context and takes
                                             no arguments*/
      ngx_http_get_all_flags,                             /* configuration setup function */
-     0,                             /* No offset. Only one context is supported. */
-     0, /* No offset when storing the module configuration on struct. */
+     NGX_HTTP_LOC_CONF_OFFSET,                             /* No offset. Only one context is supported. */
+     offsetof(ngx_http_fs_sdk_get_all_flags_loc_conf_t, paramsGetFlags), /* No offset when storing the module configuration on struct. */
      NULL},
 
     ngx_null_command /* command termination */
 };
 
-static ngx_str_t env_id_string;
-static ngx_str_t api_key_string;
-static ngx_str_t timeout_string;
+
 
 //static ngx_array_t * my_keyval_string;
 
@@ -253,7 +264,7 @@ static ngx_int_t ngx_http_fs_sdk_get_all_flags_handler(ngx_http_request_t *r)
 
     printf("after calling initilize flagship !");
 
-    flags = get_all_flags("my_visitor", "browser:Chrome");
+    flags = get_all_flags((char *)visitor_id_string.data, (char *)context_string.data);
     if (flags)
     {
         ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "getting VIP");
@@ -362,6 +373,31 @@ static char *ngx_http_get_all_flags(ngx_conf_t *cf, ngx_command_t *cmd, void *co
     /* Install the hello world handler. */
     clcf = ngx_http_conf_get_module_loc_conf(cf, ngx_http_core_module);
     clcf->handler = ngx_http_fs_sdk_get_all_flags_handler;
+
+    ngx_str_t *value_params;
+    ngx_array_t **paramsGetFlags;
+
+    value_params = cf->args->elts;
+
+    paramsGetFlags = (ngx_array_t **) ((char *) clcf + cmd->offset);
+
+    if(*paramsGetFlags == NULL){
+        return NGX_CONF_ERROR;
+    }
+
+    if (value_params[1].len == 0) {
+        return NGX_CONF_ERROR;
+    }
+
+    if (value_params[2].len == 0) {
+        return NGX_CONF_ERROR;
+    }
+    
+    visitor_id_string.data = value_params[1].data;
+    visitor_id_string.len = ngx_strlen(visitor_id_string.data);
+
+    context_string.data = value_params[2].data;
+    context_string.len = ngx_strlen(context_string.data);
 
     return NGX_CONF_OK;
 } /* ngx_http_get_all_flags */
