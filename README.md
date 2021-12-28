@@ -1,1 +1,1 @@
-# Hello World Module for Nginx
+# Flagship Module for Nginx
