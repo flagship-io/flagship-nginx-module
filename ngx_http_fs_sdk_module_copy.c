@@ -36,6 +36,7 @@ typedef struct
 {
     ngx_array_t *params;
     ngx_str_t visitor_id;
+    ngx_str_t visitor_context;
     
 } ngx_http_fs_sdk_init_loc_conf_t;
 
@@ -92,6 +93,14 @@ static ngx_command_t ngx_http_fs_sdk_commands[] = {
      ngx_conf_set_str_slot,                             /* configuration setup function */
      NGX_HTTP_LOC_CONF_OFFSET,                             /* No offset. Only one context is supported. */
      offsetof(ngx_http_fs_sdk_init_loc_conf_t, visitor_id), /* No offset when storing the module configuration on struct. */
+     &ngx_http_fs_sdk_p},
+
+     {ngx_string("set_visitor_context"),                                /* directive */
+     NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,                   /* location context and takes
+                                            no arguments*/
+     ngx_conf_set_str_slot,                             /* configuration setup function */
+     NGX_HTTP_LOC_CONF_OFFSET,                             /* No offset. Only one context is supported. */
+     offsetof(ngx_http_fs_sdk_init_loc_conf_t, visitor_context), /* No offset when storing the module configuration on struct. */
      &ngx_http_fs_sdk_p},
 
      {ngx_string("get_all_flags"),                                /* directive */
@@ -273,7 +282,7 @@ static ngx_int_t ngx_http_fs_sdk_get_all_flags_handler(ngx_http_request_t *r)
 
     printf("after calling initilize flagship !");
 
-    flags = get_all_flags((char *)cglcf->visitor_id.data, "_");
+    flags = get_all_flags((char *)cglcf->visitor_id.data, (char *)cglcf->visitor_context.data);
     if (flags)
     {
         ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "getting VIP");
