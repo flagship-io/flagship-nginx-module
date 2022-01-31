@@ -18,18 +18,12 @@
 #define SDK_INIT "sdk init"
 #define FLAGSHIP_SDK_ENABLED 1
 
-//static char *ngx_http_fs_sdk_env_id(ngx_conf_t *cf, void *post, void *data);
-//static char *ngx_http_fs_sdk_api_key(ngx_conf_t *cf, void *post, void *data);
 static char *ngx_http_get_all_flags(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
-//static ngx_int_t ngx_http_fs_sdk_init_handler(ngx_http_request_t *r);
+static ngx_int_t ngx_http_fs_sdk_variable(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data);
+static ngx_int_t ngx_http_fs_sdk_add_variables(ngx_conf_t *cf);
 static ngx_int_t ngx_http_fs_sdk_get_all_flags_handler(ngx_http_request_t *r);
-//static ngx_conf_post_handler_pt ngx_http_fs_p_env_id = ngx_http_fs_sdk_env_id;
-//static ngx_conf_post_handler_pt ngx_http_fs_p_api_key = ngx_http_fs_sdk_api_key;
-static char *ngx_http_add_params(ngx_conf_t *cf, ngx_command_t *cmd,
-    void *conf);
-
+static char *ngx_http_add_params(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static char *ngx_http_fs_sdk(ngx_conf_t *cf, void *post, void *data);
-
 static ngx_conf_post_handler_pt ngx_http_fs_sdk_p = ngx_http_fs_sdk;
 
 typedef struct
@@ -37,10 +31,9 @@ typedef struct
     ngx_array_t *params;
     ngx_str_t visitor_id;
     ngx_str_t visitor_context;
-    
+    ngx_str_t visitor_flags;
+
 } ngx_http_fs_sdk_init_loc_conf_t;
-
-
 
 static void *
 ngx_http_fs_sdk_init_create_loc_conf(ngx_conf_t *cf)
@@ -79,53 +72,51 @@ static char *(*get_all_flags)(char *, char *);
  */
 static ngx_command_t ngx_http_fs_sdk_commands[] = {
 
-    {ngx_string("fs_init"),                                /* directive */
-     NGX_HTTP_SRV_CONF | NGX_CONF_TAKE3,                   /* location context and takes
+    {ngx_string("fs_init"),                             /* directive */
+     NGX_HTTP_SRV_CONF | NGX_CONF_TAKE3,                /* location context and takes
                                             no arguments*/
-     ngx_http_add_params,                             /* configuration setup function */
-     NGX_HTTP_SRV_CONF_OFFSET,                             /* No offset. Only one context is supported. */
+     ngx_http_add_params,                               /* configuration setup function */
+     NGX_HTTP_SRV_CONF_OFFSET,                          /* No offset. Only one context is supported. */
      offsetof(ngx_http_fs_sdk_init_loc_conf_t, params), /* No offset when storing the module configuration on struct. */
      NULL},
 
-     {ngx_string("set_visitor_id"),                                /* directive */
-     NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,                   /* location context and takes
+    {ngx_string("set_visitor_id"),                          /* directive */
+     NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,                    /* location context and takes
                                             no arguments*/
-     ngx_conf_set_str_slot,                             /* configuration setup function */
-     NGX_HTTP_LOC_CONF_OFFSET,                             /* No offset. Only one context is supported. */
+     ngx_conf_set_str_slot,                                 /* configuration setup function */
+     NGX_HTTP_LOC_CONF_OFFSET,                              /* No offset. Only one context is supported. */
      offsetof(ngx_http_fs_sdk_init_loc_conf_t, visitor_id), /* No offset when storing the module configuration on struct. */
      &ngx_http_fs_sdk_p},
 
-     {ngx_string("set_visitor_context"),                                /* directive */
-     NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,                   /* location context and takes
+    {ngx_string("set_visitor_context"),                          /* directive */
+     NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,                         /* location context and takes
                                             no arguments*/
-     ngx_conf_set_str_slot,                             /* configuration setup function */
-     NGX_HTTP_LOC_CONF_OFFSET,                             /* No offset. Only one context is supported. */
+     ngx_conf_set_str_slot,                                      /* configuration setup function */
+     NGX_HTTP_LOC_CONF_OFFSET,                                   /* No offset. Only one context is supported. */
      offsetof(ngx_http_fs_sdk_init_loc_conf_t, visitor_context), /* No offset when storing the module configuration on struct. */
      &ngx_http_fs_sdk_p},
 
-     {ngx_string("get_all_flags"),                                /* directive */
-     NGX_HTTP_LOC_CONF | NGX_CONF_NOARGS,                   /* location context and takes
+    {ngx_string("get_all_flags"),         /* directive */
+     NGX_HTTP_LOC_CONF | NGX_CONF_NOARGS, /* location context and takes
                                             no arguments*/
-     ngx_http_get_all_flags,                             /* configuration setup function */
-     NGX_HTTP_LOC_CONF_OFFSET,                             /* No offset. Only one context is supported. */
-     0, /* No offset when storing the module configuration on struct. */
+     ngx_http_get_all_flags,              /* configuration setup function */
+     NGX_HTTP_LOC_CONF_OFFSET,            /* No offset. Only one context is supported. */
+     0,                                   /* No offset when storing the module configuration on struct. */
      NULL},
 
     ngx_null_command /* command termination */
 };
 
-
-
 //static ngx_array_t * my_keyval_string;
 
 /* The sdk init string. */
-static u_char ngx_sdk_init[] = SDK_INIT;
+//static u_char ngx_sdk_init[] = SDK_INIT;
 //static u_char ngx_it_works[] = IT_WORKS;
 
 /* The module context. */
 static ngx_http_module_t ngx_http_fs_sdk_module_ctx = {
-    NULL, /* preconfiguration */
-    NULL, /* postconfiguration */
+    ngx_http_fs_sdk_add_variables, /* preconfiguration */
+    NULL,                          /* postconfiguration */
 
     NULL, /* create main configuration */
     NULL, /* init main configuration */
@@ -151,6 +142,14 @@ ngx_module_t ngx_http_fs_sdk_module = {
     NULL,                        /* exit process */
     NULL,                        /* exit master */
     NGX_MODULE_V1_PADDING};
+
+static ngx_http_variable_t ngx_http_fs_sdk_vars[] = {
+
+    {ngx_string("fs_sdk_cache_var"), NULL, ngx_http_fs_sdk_variable, 0, NGX_HTTP_VAR_NOCACHEABLE, 0},
+
+    ngx_http_null_variable
+
+};
 
 #if FLAGSHIP_SDK_ENABLED
 static void initialize_flagship_sdk(char *sdk_path, ngx_http_request_t *r)
@@ -249,11 +248,12 @@ static void initialize_flagship_sdk(char *sdk_path, ngx_http_request_t *r)
 
 static ngx_int_t ngx_http_fs_sdk_get_all_flags_handler(ngx_http_request_t *r)
 {
+    ngx_int_t    rc;
     ngx_buf_t *b;
     ngx_chain_t out;
-    u_char *message;
 
     ngx_http_fs_sdk_init_loc_conf_t *cglcf;
+
     cglcf = ngx_http_get_module_loc_conf(r, ngx_http_fs_sdk_module);
 
     /* Set the Content-Type header. */
@@ -267,65 +267,53 @@ static ngx_int_t ngx_http_fs_sdk_get_all_flags_handler(ngx_http_request_t *r)
         return NGX_ERROR;
     }
 
+    rc = ngx_http_discard_request_body(r);
+ 
+    if (rc != NGX_OK) {
+        return rc;
+    }
+
     /* Insertion in the buffer chain. */
     out.buf = b;
     out.next = NULL; /* just one buffer */
 
-#if FLAGSHIP_SDK_ENABLED
+/* #if FLAGSHIP_SDK_ENABLED
 
-    char *flags;
-    ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "checking on feature");
 
-    printf("calling initilize flagship !");
-
-    initialize_flagship_sdk("/usr/local/nginx/sbin/libflagship.so", r);
-
-    printf("after calling initilize flagship !");
-
-    flags = get_all_flags((char *)cglcf->visitor_id.data, (char *)cglcf->visitor_context.data);
-    if (flags)
-    {
-        ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "getting VIP");
-
-        message = (u_char *)flags;
-        //message = (u_char *)cglcf->env_id.data;
-    }
-    else
-    {
-        message = ngx_sdk_init;
-    }
+    
 #else
-    message = ngx_sdk_init;
-#endif
+    
+#endif */
 
-    ngx_buf_t *msg = ngx_palloc(r->pool, ngx_strlen(message));
-    if (msg == NULL)
-    {
-        return NGX_ERROR;
-    }
-    ngx_memcpy(msg, message, ngx_strlen(message));
+    b->last = ngx_sprintf(b->last, "Active connections: %s \n", cglcf->visitor_flags.data);
 
-    if (message != ngx_sdk_init)
-    {
-        free(message);
-    }
+    r->headers_out.status = NGX_HTTP_OK;
 
-    b->pos = (u_char *)msg;                                              /* first position in memory of the data */
-    b->last = (u_char *)msg + ((long int)ngx_strlen((const char *)msg)); /* last position in memory of the data */
+    r->headers_out.content_length_n = b->last - b->pos;
 
-    b->memory = 1;   /* content is in read-only memory */
-    b->last_buf = 1; /* there will be no more buffers in the request */
+    b->last_buf = (r == r->main) ? 1 : 0;
+
+    b->last_in_chain = 1;
+
+    /* b->pos = (u_char *)msg;     */                                          /* first position in memory of the data */
+    /* b->last = (u_char *)msg + ((long int)ngx_strlen((const char *)msg)); */ /* last position in memory of the data */
+
+    /* b->memory = 1;  */  /* content is in read-only memory */
+    /* b->last_buf = 1; */ /* there will be no more buffers in the request */
 
     /* Sending the headers for the reply. */
     r->headers_out.status = NGX_HTTP_OK; /* 200 status code */
     /* Get the content length of the body. */
-    r->headers_out.content_length_n = ((long int)ngx_strlen((const char *)msg));
+    r->headers_out.content_length_n = ((long int)ngx_strlen((const char *)cglcf->visitor_flags.data));
     ngx_http_send_header(r); /* Send the headers */
+
+    if (rc == NGX_ERROR || rc > NGX_OK || r->header_only) {
+        return rc;
+    }
 
     /* Send the body, and return the status code of the output filter chain. */
     return ngx_http_output_filter(r, &out);
 } /* ngx_http_fs_sdk_handler */
-
 
 /**
  * Configuration setup function that installs the content handler.
@@ -341,7 +329,7 @@ static ngx_int_t ngx_http_fs_sdk_get_all_flags_handler(ngx_http_request_t *r)
  */
 
 static char *ngx_http_add_params(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
-{  
+{
     ngx_http_core_loc_conf_t *pcf;
 
     pcf = ngx_http_conf_get_module_srv_conf(cf, ngx_http_core_module);
@@ -352,24 +340,28 @@ static char *ngx_http_add_params(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
     value = cf->args->elts;
 
-    params = (ngx_array_t **) ((char *) pcf + cmd->offset);
+    params = (ngx_array_t **)((char *)pcf + cmd->offset);
 
-    if(*params == NULL){
+    if (*params == NULL)
+    {
         return NGX_CONF_ERROR;
     }
 
-    if (value[1].len == 0) {
+    if (value[1].len == 0)
+    {
         return NGX_CONF_ERROR;
     }
 
-    if (value[2].len == 0) {
+    if (value[2].len == 0)
+    {
         return NGX_CONF_ERROR;
     }
 
-    if (value[3].len == 0) {
+    if (value[3].len == 0)
+    {
         return NGX_CONF_ERROR;
     }
-    
+
     env_id_string.data = value[1].data;
     env_id_string.len = ngx_strlen(env_id_string.data);
 
@@ -380,9 +372,7 @@ static char *ngx_http_add_params(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     timeout_string.len = ngx_strlen(timeout_string.data);
 
     return NGX_CONF_OK;
-
 }
-
 
 static char *ngx_http_get_all_flags(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
@@ -395,12 +385,72 @@ static char *ngx_http_get_all_flags(ngx_conf_t *cf, ngx_command_t *cmd, void *co
     return NGX_CONF_OK;
 } /* ngx_http_get_all_flags */
 
-static char *ngx_http_fs_sdk(ngx_conf_t *cf, void *post, void *data){
-    
+static char *ngx_http_fs_sdk(ngx_conf_t *cf, void *post, void *data)
+{
+
     ngx_http_core_loc_conf_t *clcf;
 
     clcf = ngx_http_conf_get_module_loc_conf(cf, ngx_http_core_module);
     clcf->handler = ngx_http_fs_sdk_get_all_flags_handler;
 
     return NGX_CONF_OK;
+}
+
+static ngx_int_t ngx_http_fs_sdk_add_variables(ngx_conf_t *cf)
+{
+    ngx_http_variable_t *var, *v;
+    for (v = ngx_http_fs_sdk_vars; v->name.len; v++)
+    {
+        var = ngx_http_add_variable(cf, &v->name, v->flags);
+        if (var == NULL)
+        {
+            return NGX_ERROR;
+        }
+        var->get_handler = v->get_handler;
+        var->data = v->data;
+    }
+    return NGX_OK;
+}
+
+static ngx_int_t ngx_http_fs_sdk_variable(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data)
+{
+    u_char *p;
+    u_char *value;
+    ngx_http_fs_sdk_init_loc_conf_t *cglcf;
+    char *flags;
+
+    initialize_flagship_sdk("/usr/local/nginx/sbin/libflagship.so", r);
+
+    cglcf = ngx_http_get_module_loc_conf(r, ngx_http_fs_sdk_module);
+
+    flags = get_all_flags((char *)cglcf->visitor_id.data, (char *)cglcf->visitor_context.data);
+    
+    p = ngx_pnalloc(r->pool, NGX_ATOMIC_T_LEN);
+
+    if (p == NULL)
+    {
+        return NGX_ERROR;
+    }
+
+    switch (data)
+    {
+
+    case 0:
+
+        value = (u_char*)flags;
+        break;
+    default:
+
+        value = 0;
+
+        break;
+    }
+
+    v->len = ngx_sprintf(p, "%s", value) - p;
+    v->valid = 1;
+    v->no_cacheable = 0;
+    v->not_found = 0;
+    v->data = p;
+
+    return NGX_OK;
 }
