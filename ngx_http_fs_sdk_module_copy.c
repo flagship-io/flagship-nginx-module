@@ -61,6 +61,7 @@ static char *context = NULL; */
 static ngx_str_t env_id_string;
 static ngx_str_t api_key_string;
 static ngx_str_t timeout_string;
+static ngx_str_t log_level_string;
 
 static void (*init_flagship)(char *, char *, int, char *);
 static char *(*get_all_flags)(char *, char *);
@@ -73,7 +74,7 @@ static char *(*get_all_flags)(char *, char *);
 static ngx_command_t ngx_http_fs_sdk_commands[] = {
 
     {ngx_string("fs_init"),                             /* directive */
-     NGX_HTTP_SRV_CONF | NGX_CONF_TAKE3,                /* location context and takes
+     NGX_HTTP_SRV_CONF | NGX_CONF_TAKE4,                /* location context and takes
                                             no arguments*/
      ngx_http_add_params,                               /* configuration setup function */
      NGX_HTTP_SRV_CONF_OFFSET,                          /* No offset. Only one context is supported. */
@@ -232,7 +233,7 @@ static void initialize_flagship_sdk(char *sdk_path, ngx_http_request_t *r)
 
     //create the sdk init handle
     //init_flagship((char *)env_id_string.data, "BsIK86oh7c12c9G7ce4Wm1yBlWeaMf3t1S0xyYzI", 4000, "ERROR");
-    init_flagship((char *)env_id_string.data, (char *)api_key_string.data, (long int)timeout_string.data, "ERROR");
+    init_flagship((char *)env_id_string.data, (char *)api_key_string.data, (long int)timeout_string.data, (char *)log_level_string.data);
     flagship_sdk_initialized = 1;
 }
 #endif
@@ -370,6 +371,9 @@ static char *ngx_http_add_params(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
     timeout_string.data = value[3].data;
     timeout_string.len = ngx_strlen(timeout_string.data);
+
+    log_level_string.data = value[4].data;
+    log_level_string.len = ngx_strlen(log_level_string.data);
 
     return NGX_CONF_OK;
 }
