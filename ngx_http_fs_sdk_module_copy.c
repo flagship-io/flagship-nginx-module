@@ -26,6 +26,7 @@ static char *ngx_http_add_params(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 static char *ngx_http_fs_sdk(ngx_conf_t *cf, void *post, void *data);
 static ngx_conf_post_handler_pt ngx_http_fs_sdk_p = ngx_http_fs_sdk;
 
+#if FLAGSHIP_SDK_ENABLED
 typedef struct
 {
     ngx_array_t *params;
@@ -34,9 +35,9 @@ typedef struct
     ngx_str_t visitor_flags;
 
 } ngx_http_fs_sdk_init_loc_conf_t;
+#endif
 
-static void *
-ngx_http_fs_sdk_init_create_loc_conf(ngx_conf_t *cf)
+static void *ngx_http_fs_sdk_init_create_loc_conf(ngx_conf_t *cf)
 {
     ngx_http_fs_sdk_init_loc_conf_t *conf;
 
@@ -46,21 +47,15 @@ ngx_http_fs_sdk_init_create_loc_conf(ngx_conf_t *cf)
         return NULL;
     }
 
-    //conf->my_keyval = NULL;
-
     return conf;
 }
 #if FLAGSHIP_SDK_ENABLED
+
 static int flagship_sdk_initialized = 0;
-/* static char *env_id = NULL;
-static char *api_key = NULL;
-static int polling_interval = 0;
-static char *log_level = NULL;
-static char *visitor_id = NULL;
-static char *context = NULL; */
+
 static ngx_str_t env_id_string;
 static ngx_str_t api_key_string;
-static ngx_str_t timeout_string;
+static ngx_int_t timeout_string;
 static ngx_str_t log_level_string;
 
 static void (*init_flagship)(char *, char *, int, char *);
@@ -68,7 +63,7 @@ static char *(*get_all_flags)(char *, char *);
 #endif
 
 /**
- * This module provided directive: fs_init.
+ * This module provided directive: fs_init, set_visitor_id, set_visitor_context, get_all_flags.
  *
  */
 static ngx_command_t ngx_http_fs_sdk_commands[] = {
@@ -107,8 +102,6 @@ static ngx_command_t ngx_http_fs_sdk_commands[] = {
 
     ngx_null_command /* command termination */
 };
-
-//static ngx_array_t * my_keyval_string;
 
 /* The sdk init string. */
 //static u_char ngx_sdk_init[] = SDK_INIT;
@@ -163,41 +156,29 @@ static void initialize_flagship_sdk(char *sdk_path, ngx_http_request_t *r)
         return;
     }
 
-    /* if (env_id == NULL)
+    if (env_id_string.data == NULL)
     {
         ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "no env_id defined");
         exit(1);
     }
 
-    if (api_key == NULL)
+    if (api_key_string.data == NULL)
     {
         ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "no api_key defined");
         exit(1);
     }
 
-    if (polling_interval == 0)
+    /* if (timeout_string == 0)
     {
         ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "no polling_interval defined");
         exit(1);
-    }
+    } */
 
-    if (log_level == NULL)
+    if (log_level_string.data == NULL)
     {
         ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "no log_level defined");
         exit(1);
     }
-
-    if (visitor_id == NULL)
-    {
-        ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "no visitor_id defined");
-        exit(1);
-    }
-
-    if (context == NULL)
-    {
-        ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "no context defined");
-        exit(1);
-    } */
 
     ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "initalizing the flagship sdk");
 
@@ -232,8 +213,7 @@ static void initialize_flagship_sdk(char *sdk_path, ngx_http_request_t *r)
     }
 
     //create the sdk init handle
-    //init_flagship((char *)env_id_string.data, "BsIK86oh7c12c9G7ce4Wm1yBlWeaMf3t1S0xyYzI", 4000, "ERROR");
-    init_flagship((char *)env_id_string.data, (char *)api_key_string.data, (long int)timeout_string.data, (char *)log_level_string.data);
+    init_flagship((char *)env_id_string.data, (char *)api_key_string.data, 60, (char *)log_level_string.data);
     flagship_sdk_initialized = 1;
 }
 #endif
@@ -249,7 +229,7 @@ static void initialize_flagship_sdk(char *sdk_path, ngx_http_request_t *r)
 
 static ngx_int_t ngx_http_fs_sdk_get_all_flags_handler(ngx_http_request_t *r)
 {
-    ngx_int_t    rc;
+    ngx_int_t rc;
     ngx_buf_t *b;
     ngx_chain_t out;
 
@@ -269,8 +249,9 @@ static ngx_int_t ngx_http_fs_sdk_get_all_flags_handler(ngx_http_request_t *r)
     }
 
     rc = ngx_http_discard_request_body(r);
- 
-    if (rc != NGX_OK) {
+
+    if (rc != NGX_OK)
+    {
         return rc;
     }
 
@@ -278,7 +259,7 @@ static ngx_int_t ngx_http_fs_sdk_get_all_flags_handler(ngx_http_request_t *r)
     out.buf = b;
     out.next = NULL; /* just one buffer */
 
-/* #if FLAGSHIP_SDK_ENABLED
+    /* #if FLAGSHIP_SDK_ENABLED
 
 
     
@@ -308,7 +289,8 @@ static ngx_int_t ngx_http_fs_sdk_get_all_flags_handler(ngx_http_request_t *r)
     r->headers_out.content_length_n = ((long int)ngx_strlen((const char *)cglcf->visitor_flags.data));
     ngx_http_send_header(r); /* Send the headers */
 
-    if (rc == NGX_ERROR || rc > NGX_OK || r->header_only) {
+    if (rc == NGX_ERROR || rc > NGX_OK || r->header_only)
+    {
         return rc;
     }
 
@@ -358,7 +340,7 @@ static char *ngx_http_add_params(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         return NGX_CONF_ERROR;
     }
 
-    if (value[3].len == 0)
+    if (value[4].len == 0)
     {
         return NGX_CONF_ERROR;
     }
@@ -369,8 +351,7 @@ static char *ngx_http_add_params(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     api_key_string.data = value[2].data;
     api_key_string.len = ngx_strlen(api_key_string.data);
 
-    timeout_string.data = value[3].data;
-    timeout_string.len = ngx_strlen(timeout_string.data);
+    timeout_string = (long int)value[3].data;
 
     log_level_string.data = value[4].data;
     log_level_string.len = ngx_strlen(log_level_string.data);
@@ -423,12 +404,32 @@ static ngx_int_t ngx_http_fs_sdk_variable(ngx_http_request_t *r, ngx_http_variab
     ngx_http_fs_sdk_init_loc_conf_t *cglcf;
     char *flags;
 
+    #if FLAGSHIP_SDK_ENABLED
+
     initialize_flagship_sdk("/usr/local/nginx/sbin/libflagship.so", r);
 
     cglcf = ngx_http_get_module_loc_conf(r, ngx_http_fs_sdk_module);
 
+    if (cglcf->visitor_id.data == NULL)
+    {
+        ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "no visitor_id defined");
+        exit(1);
+    }
+
+    if (cglcf->visitor_context.data == NULL)
+    {
+        ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "no context defined");
+        exit(1);
+    }
+
     flags = get_all_flags((char *)cglcf->visitor_id.data, (char *)cglcf->visitor_context.data);
-    
+
+    #else
+
+    flags = "Flagship sdk disabled"
+
+    #endif
+
     p = ngx_pnalloc(r->pool, NGX_ATOMIC_T_LEN);
 
     if (p == NULL)
@@ -441,7 +442,7 @@ static ngx_int_t ngx_http_fs_sdk_variable(ngx_http_request_t *r, ngx_http_variab
 
     case 0:
 
-        value = (u_char*)flags;
+        value = (u_char *)flags;
         break;
     default:
 
