@@ -43,7 +43,7 @@ Set the visitor context
 * **default**: `none`
 * **context**: `location`
 
-Execute the function getAllFlags that return the flags based on visitor id and context but does not return it in nginx it rather store it in variable named fs_sdk_cache_var that you can use as a key/value in nginx cache table for feature management.
+Execute the function getAllFlags that return the flags based on visitor id and context but does not return it in nginx it rather store it in variable named `fs_sdk_cache_var` that you can use as a key/value in nginx cache table for feature management.
 Note that you have to initialize the sdk and setting visitor id and context before running get_all_flags directive.
 
 
