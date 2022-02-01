@@ -57,20 +57,20 @@ http {
         
         location /test {
             set_visitor_id 'visitor_id_test';
-		    set_visitor_context 'visitor_context_test';
-		    get_all_flags;
+	    set_visitor_context 'visitor_context_test';
+	    get_all_flags;
 
             echo $fs_sdk_cache_var;
         }
 
         location /experiment {
             set_visitor_id 'visitor_id_experiment';
-		    set_visitor_context 'visitor_context_experiment';
-		    get_all_flags;
-
+	    set_visitor_context 'visitor_context_experiment';
+	    get_all_flags;
+		    
             echo $fs_sdk_cache_var;
         }
-	}
+}
 ```
 this module uses Go wrapper for C, which is based on the Go SDK that implement bucketing mode.
 
