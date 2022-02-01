@@ -26,7 +26,6 @@ static char *ngx_http_add_params(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 static char *ngx_http_fs_sdk(ngx_conf_t *cf, void *post, void *data);
 static ngx_conf_post_handler_pt ngx_http_fs_sdk_p = ngx_http_fs_sdk;
 
-#if FLAGSHIP_SDK_ENABLED
 typedef struct
 {
     ngx_array_t *params;
@@ -35,7 +34,6 @@ typedef struct
     ngx_str_t visitor_flags;
 
 } ngx_http_fs_sdk_init_loc_conf_t;
-#endif
 
 static void *ngx_http_fs_sdk_init_create_loc_conf(ngx_conf_t *cf)
 {
@@ -49,8 +47,8 @@ static void *ngx_http_fs_sdk_init_create_loc_conf(ngx_conf_t *cf)
 
     return conf;
 }
-#if FLAGSHIP_SDK_ENABLED
 
+#if FLAGSHIP_SDK_ENABLED
 static int flagship_sdk_initialized = 0;
 
 static ngx_str_t env_id_string;
@@ -61,7 +59,6 @@ static ngx_str_t log_level_string;
 static void (*init_flagship)(char *, char *, int, char *);
 static char *(*get_all_flags)(char *, char *);
 #endif
-
 /**
  * This module provided directive: fs_init, set_visitor_id, set_visitor_context, get_all_flags.
  *
@@ -102,10 +99,6 @@ static ngx_command_t ngx_http_fs_sdk_commands[] = {
 
     ngx_null_command /* command termination */
 };
-
-/* The sdk init string. */
-//static u_char ngx_sdk_init[] = SDK_INIT;
-//static u_char ngx_it_works[] = IT_WORKS;
 
 /* The module context. */
 static ngx_http_module_t ngx_http_fs_sdk_module_ctx = {
@@ -214,6 +207,7 @@ static void initialize_flagship_sdk(char *sdk_path, ngx_http_request_t *r)
 
     //create the sdk init handle
     init_flagship((char *)env_id_string.data, (char *)api_key_string.data, 60, (char *)log_level_string.data);
+
     flagship_sdk_initialized = 1;
 }
 #endif
@@ -259,14 +253,6 @@ static ngx_int_t ngx_http_fs_sdk_get_all_flags_handler(ngx_http_request_t *r)
     out.buf = b;
     out.next = NULL; /* just one buffer */
 
-    /* #if FLAGSHIP_SDK_ENABLED
-
-
-    
-#else
-    
-#endif */
-
     b->last = ngx_sprintf(b->last, "Active connections: %s \n", cglcf->visitor_flags.data);
 
     r->headers_out.status = NGX_HTTP_OK;
@@ -276,12 +262,6 @@ static ngx_int_t ngx_http_fs_sdk_get_all_flags_handler(ngx_http_request_t *r)
     b->last_buf = (r == r->main) ? 1 : 0;
 
     b->last_in_chain = 1;
-
-    /* b->pos = (u_char *)msg;     */                                          /* first position in memory of the data */
-    /* b->last = (u_char *)msg + ((long int)ngx_strlen((const char *)msg)); */ /* last position in memory of the data */
-
-    /* b->memory = 1;  */  /* content is in read-only memory */
-    /* b->last_buf = 1; */ /* there will be no more buffers in the request */
 
     /* Sending the headers for the reply. */
     r->headers_out.status = NGX_HTTP_OK; /* 200 status code */
@@ -318,6 +298,7 @@ static char *ngx_http_add_params(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     pcf = ngx_http_conf_get_module_srv_conf(cf, ngx_http_core_module);
     pcf->handler = ngx_http_fs_sdk_get_all_flags_handler;
 
+#if FLAGSHIP_SDK_ENABLED
     ngx_str_t *value;
     ngx_array_t **params;
 
@@ -355,6 +336,7 @@ static char *ngx_http_add_params(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
     log_level_string.data = value[4].data;
     log_level_string.len = ngx_strlen(log_level_string.data);
+#endif
 
     return NGX_CONF_OK;
 }
@@ -363,7 +345,7 @@ static char *ngx_http_get_all_flags(ngx_conf_t *cf, ngx_command_t *cmd, void *co
 {
     ngx_http_core_loc_conf_t *clcf; /* pointer to core location configuration */
 
-    /* Install the hello world handler. */
+    /* Install get all flags handler. */
     clcf = ngx_http_conf_get_module_loc_conf(cf, ngx_http_core_module);
     clcf->handler = ngx_http_fs_sdk_get_all_flags_handler;
 
@@ -401,10 +383,11 @@ static ngx_int_t ngx_http_fs_sdk_variable(ngx_http_request_t *r, ngx_http_variab
 {
     u_char *p;
     u_char *value;
-    ngx_http_fs_sdk_init_loc_conf_t *cglcf;
     char *flags;
 
-    #if FLAGSHIP_SDK_ENABLED
+#if FLAGSHIP_SDK_ENABLED
+
+    ngx_http_fs_sdk_init_loc_conf_t *cglcf;
 
     initialize_flagship_sdk("/usr/local/nginx/sbin/libflagship.so", r);
 
@@ -424,11 +407,11 @@ static ngx_int_t ngx_http_fs_sdk_variable(ngx_http_request_t *r, ngx_http_variab
 
     flags = get_all_flags((char *)cglcf->visitor_id.data, (char *)cglcf->visitor_context.data);
 
-    #else
+#else
 
-    flags = "Flagship sdk disabled"
+    flags = "Flagship sdk disabled";
 
-    #endif
+#endif
 
     p = ngx_pnalloc(r->pool, NGX_ATOMIC_T_LEN);
 
