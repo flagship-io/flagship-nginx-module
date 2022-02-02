@@ -60,7 +60,7 @@ static void (*init_flagship)(char *, char *, int, char *);
 static char *(*get_all_flags)(char *, char *);
 #endif
 /**
- * This module provided directive: fs_init, set_visitor_id, set_visitor_context, get_all_flags.
+ * This module provided directive: fs_init, fs_visitor_id, fs_visitor_context, fs_get_all_flags.
  *
  */
 static ngx_command_t ngx_http_fs_sdk_commands[] = {
@@ -73,7 +73,7 @@ static ngx_command_t ngx_http_fs_sdk_commands[] = {
      offsetof(ngx_http_fs_sdk_init_loc_conf_t, params), /* No offset when storing the module configuration on struct. */
      NULL},
 
-    {ngx_string("set_visitor_id"),                          /* directive */
+    {ngx_string("fs_visitor_id"),                          /* directive */
      NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,                    /* location context and takes
                                             no arguments*/
      ngx_conf_set_str_slot,                                 /* configuration setup function */
@@ -81,7 +81,7 @@ static ngx_command_t ngx_http_fs_sdk_commands[] = {
      offsetof(ngx_http_fs_sdk_init_loc_conf_t, visitor_id), /* No offset when storing the module configuration on struct. */
      &ngx_http_fs_sdk_p},
 
-    {ngx_string("set_visitor_context"),                          /* directive */
+    {ngx_string("fs_visitor_context"),                          /* directive */
      NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,                         /* location context and takes
                                             no arguments*/
      ngx_conf_set_str_slot,                                      /* configuration setup function */
@@ -89,7 +89,7 @@ static ngx_command_t ngx_http_fs_sdk_commands[] = {
      offsetof(ngx_http_fs_sdk_init_loc_conf_t, visitor_context), /* No offset when storing the module configuration on struct. */
      &ngx_http_fs_sdk_p},
 
-    {ngx_string("get_all_flags"),         /* directive */
+    {ngx_string("fs_get_all_flags"),         /* directive */
      NGX_HTTP_LOC_CONF | NGX_CONF_NOARGS, /* location context and takes
                                             no arguments*/
      ngx_http_get_all_flags,              /* configuration setup function */
@@ -132,7 +132,7 @@ ngx_module_t ngx_http_fs_sdk_module = {
 
 static ngx_http_variable_t ngx_http_fs_sdk_vars[] = {
 
-    {ngx_string("fs_sdk_cache_var"), NULL, ngx_http_fs_sdk_variable, 0, NGX_HTTP_VAR_NOCACHEABLE, 0},
+    {ngx_string("fs_flags"), NULL, ngx_http_fs_sdk_variable, 0, NGX_HTTP_VAR_NOCACHEABLE, 0},
 
     ngx_http_null_variable
 
