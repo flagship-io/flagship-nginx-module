@@ -68,8 +68,8 @@ typedef struct { void *data; GoInt len; GoInt cap; } GoSlice;
 extern "C" {
 #endif
 
-extern __declspec(dllexport) void initFlagship(char* environmentID, char* apiKey, int polling, char* logLevel, int trackingEnabled);
-extern __declspec(dllexport) char* getAllFlags(char* visitorID, char* contextString);
+extern void initFlagship(char* environmentID, char* apiKey, int polling, char* logLevel, int trackingEnabled);
+extern char* getAllFlags(char* visitorID, char* contextString);
 
 #ifdef __cplusplus
 }
