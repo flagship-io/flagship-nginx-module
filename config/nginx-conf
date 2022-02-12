@@ -46,17 +46,18 @@ server {
 	#index index.html index.htm index.nginx-debian.html;
 
 	server_name _;
+	error_log /var/log/nginx/error.log debug;
 	
-	fs_init 'c0n48jn5thv01k0ijmo0' 'BsIK86oh7c12c9G7ce4Wm1yBlWeaMf3t1S0xyYzI' '60' 'ERROR' '0';
+	fs_init 'blvo2kijq6pg023l8edg' 'wwURPfcEB01YVMfTYWfCtaezCkXVLeFZ61FJmXtI' '60' 'DEBUG' '0';
 	
 	location /test {
-		set $visitor "visitor_id";
-		
-		fs_visitor_id 'visitor_id';	
-		fs_visitor_context 'browser:Firefox';
+		fs_visitor_id $request_id;
+		fs_visitor_context 'browser:Chrome';
 		fs_get_all_flags;
-		
-		echo $fs_flags;	
+
+		add_header x-flags $fs_flags;
+		default_type text/html;
+		return 200 'gangnam style2!';
 	}
 
 	location /loca {
@@ -64,9 +65,11 @@ server {
 		
 		fs_visitor_id $visitor;
 		fs_visitor_context 'browser:Chrome';
-		fs_get_all_flags;
-
-		echo $fs_flags;
+		# fs_get_all_flags;
+		
+		add_header x-flags "youpi";
+		default_type text/html;
+		return 200 'gangnam style 2!';
 	}
 
 	# pass PHP scripts to FastCGI server
