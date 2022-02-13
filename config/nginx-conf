@@ -52,7 +52,7 @@ server {
 	
 	location /test {
 		fs_visitor_id $request_id;
-		fs_visitor_context 'browser:Chrome';
+		fs_visitor_context user_agent:$http_user_agent;
 		fs_get_all_flags;
 
 		add_header x-flags $fs_flags;
