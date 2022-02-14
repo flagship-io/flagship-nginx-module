@@ -19,6 +19,18 @@
 # Default server configuration
 #
 
+proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=my_cache:10m;
+
+upstream originserver {
+	server 127.0.0.1:8081;
+}
+
+map $http_user_agent $browser_type {
+    default                                 "Edge";
+    "~Mozilla.*Firefox*"             "Firefox";
+    "~Chrome*"                       "Chrome";
+}
+
 server {
 	#set $browser 'c0n48jn5thv01k0ijmo0';
 	listen 80 default_server;
@@ -48,28 +60,45 @@ server {
 	server_name _;
 	error_log /var/log/nginx/error.log debug;
 	
-	fs_init 'blvo2kijq6pg023l8edg' 'wwURPfcEB01YVMfTYWfCtaezCkXVLeFZ61FJmXtI' '60' 'DEBUG' '0';
+	fs_init 'c0n48jn5thv01k0ijmo0' 'BsIK86oh7c12c9G7ce4Wm1yBlWeaMf3t1S0xyYzI' '500' 'ERROR' '0';
 	
 	location /test {
 		fs_visitor_id $request_id;
-		fs_visitor_context user_agent:$http_user_agent;
+		fs_visitor_context browser:$browser_type;
 		fs_get_all_flags;
 
+		include proxy_params;
+		proxy_buffering on;
+		proxy_cache my_cache;
+		proxy_cache_valid any 10m;
+
+		add_header X-Proxy-Cache $upstream_cache_status;
 		add_header x-flags $fs_flags;
+		add_header x-browser_type $browser_type;
+
+		proxy_set_header X-Flagship-Flags $fs_flags;
+		proxy_cache_key $fs_flags;
+		
 		default_type text/html;
-		return 200 'gangnam style2!';
+
+		proxy_pass http://originserver;	
+
+		#return 200 $fs_flags;
 	}
 
-	location /loca {
-		set $visitor "visitor_id";
-		
-		fs_visitor_id $visitor;
-		fs_visitor_context 'browser:Chrome';
-		# fs_get_all_flags;
-		
-		add_header x-flags "youpi";
+	location /experiment {
+
+		include proxy_params;
+		proxy_buffering on;
+		proxy_cache my_cache;
+		proxy_cache_valid any 10m;
+
+		proxy_set_header X-Flagship-Flags "noflag";
+
 		default_type text/html;
-		return 200 'gangnam style 2!';
+
+		proxy_pass http://originserver;	
+
 	}
 
 	# pass PHP scripts to FastCGI server
