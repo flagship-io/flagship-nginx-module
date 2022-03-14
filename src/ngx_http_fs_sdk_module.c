@@ -1,5 +1,5 @@
 /**
- * @file   ngx_http_flagship_sdk_module.c
+ * @file   ngx_http_fs_sdk_module.c
  * @author Chadi LAOULAOU <chadi.laoulaou@abtasty.com>
  * @date   ***********
  *
@@ -10,6 +10,7 @@
  * Copyright (C) 2021
  *
  */
+
 #include <ngx_config.h>
 #include <ngx_core.h>
 #include <ngx_http.h>
@@ -60,9 +61,9 @@ static int flagship_sdk_initialized = 0;
 
 static ngx_str_t env_id_string;
 static ngx_str_t api_key_string;
-static ngx_int_t timeout_string;
+static ngx_str_t timeout_string;
 static ngx_str_t log_level_string;
-static ngx_int_t tracking_enabled_string;
+static ngx_str_t tracking_enabled_string;
 
 static void (*init_flagship)(char *, char *, int, char *, int);
 static char *(*get_all_flags)(char *, char *);
@@ -86,7 +87,7 @@ static ngx_command_t ngx_http_fs_sdk_commands[] = {
                                             no arguments*/
      ngx_http_get_visitor_id,                                       /* configuration setup function */
      NGX_HTTP_LOC_CONF_OFFSET,                                     /* No offset. Only one context is supported. */
-     0, /* No offset when storing the module configuration on struct. */
+     0,                                                            /* No offset when storing the module configuration on struct. */
      &ngx_http_fs_sdk_p},
 
     {ngx_string("fs_visitor_context"),                                  /* directive */
@@ -169,17 +170,17 @@ static void initialize_flagship_sdk(char *sdk_path, ngx_http_request_t *r)
         exit(1);
     }
 
-    /* if (timeout_string == 0)
+    if (timeout_string.data == NULL)
     {
         ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "no polling_interval defined");
         exit(1);
-    } */
+    }
 
-    /* if (tracking_enabled_string == 0)
+    if (tracking_enabled_string.data == NULL)
     {
         ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "no tracking enabled defined");
         exit(1);
-    } */
+    }
 
     if (log_level_string.data == NULL)
     {
@@ -213,15 +214,15 @@ static void initialize_flagship_sdk(char *sdk_path, ngx_http_request_t *r)
 
     ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "looking up flagship_sdk_get_all_flags");
     get_all_flags = dlsym(handle, "getAllFlags");
+    
     if ((error = dlerror()) != NULL)
     {
         ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, error);
         exit(1);
     }
-
+       
     //create the sdk init handle
-    init_flagship((char *)env_id_string.data, (char *)api_key_string.data, 60, (char *)log_level_string.data, 0);
-
+    init_flagship((char *)env_id_string.data, (char *)api_key_string.data, atoi((char*) timeout_string.data), (char *)log_level_string.data, atoi((char*) tracking_enabled_string.data));
     flagship_sdk_initialized = 1;
 }
 #endif
@@ -346,12 +347,14 @@ static char *ngx_http_add_params(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     api_key_string.data = value[2].data;
     api_key_string.len = ngx_strlen(api_key_string.data);
 
-    timeout_string = (long int)value[3].data;
+    timeout_string.data = value[3].data;
+    timeout_string.len = ngx_strlen(timeout_string.data);
 
     log_level_string.data = value[4].data;
     log_level_string.len = ngx_strlen(log_level_string.data);
 
-    tracking_enabled_string = (long int)value[5].data;
+    tracking_enabled_string.data = value[5].data;
+    tracking_enabled_string.len = ngx_strlen(tracking_enabled_string.data);
 
 #endif
 
