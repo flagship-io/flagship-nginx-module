@@ -32,6 +32,10 @@ RUN cd nginx-1.18.0 && ./configure && make && make install
 
 COPY ./src /work_directory/ngx_http_fs_sdk_module
 
+COPY ./nginx-node-demo /work_directory/
+
+RUN curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
+
 RUN cd nginx-1.18.0 && ./configure --with-compat --add-dynamic-module=../ngx_http_fs_sdk_module --with-pcre
 
 COPY ./watcher.sh ./watcher.sh
