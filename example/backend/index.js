@@ -4,19 +4,16 @@ const port = 8081
 
 app.set('etag', false)
 
-app.get('/test', (req, res) => {
-    console.log("flags " + req.get('x-flagship-flags'))
-    console.log("user agent " + req.get('user-agent'))
-    if (req.get('user-agent').includes("Chrome")) {
-        res.send("Chrome")
-    } else {
-        res.send("Firefox")
-    }
+app.get('/with_module', (req, res) => {
+
+    res.status(200).send(
+        `   <p>Visitor id : ${req.get('x-visitor-id')}</p>
+            <p>Visitor context : ${req.get('x-visitor-context')}</p>
+            <p>Flags : ${req.get('x-flagship-flags')}</p>
+        `)
 })
 
-app.get('/experiment', (req, res) => {
-    console.log("flags " + req.get('x-flagship-flags'))
-    console.log("user agent " + req.get('user-agent'))
+app.get('/without_module', (req, res) => {
     if (req.get('user-agent').includes("Chrome")) {
         res.send("Chrome")
     } else {
@@ -25,5 +22,5 @@ app.get('/experiment', (req, res) => {
 })
 
 app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
+    console.log(`Listening on port ${port}`)
 })

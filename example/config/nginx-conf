@@ -32,7 +32,7 @@ map $http_user_agent $browser_type {
 }
 
 server {
-	#set $browser 'c0n48jn5thv01k0ijmo0';
+
 	listen 80 default_server;
 	listen [::]:80 default_server;
 
@@ -62,10 +62,13 @@ server {
 	
 	fs_init 'c0n48jn5thv01k0ijmo0' 'BsIK86oh7c12c9G7ce4Wm1yBlWeaMf3t1S0xyYzI' '500' 'ERROR' '0';
 	
-	location /test {
+	location /with_module {
+
 		fs_visitor_id $request_id;
 		fs_visitor_context browser:$browser_type;
 		fs_get_all_flags;
+
+		set $visitor_context browser:$browser_type;
 
 		include proxy_params;
 		proxy_buffering on;
@@ -73,25 +76,29 @@ server {
 		proxy_cache_valid any 10m;
 
 		add_header X-Proxy-Cache $upstream_cache_status;
-		add_header x-flags $fs_flags;
-		add_header x-browser_type $browser_type;
+		add_header X-Flags $fs_flags;
+		add_header X-Browser_type $browser_type;
 
 		proxy_set_header X-Flagship-Flags $fs_flags;
+		proxy_set_header X-Visitor-Id $request_id;
+		proxy_set_header X-Visitor-Context $visitor_context;
+
 		proxy_cache_key $fs_flags;
 		
 		default_type text/html;
 
 		proxy_pass http://originserver;	
 
-		#return 200 $fs_flags;
 	}
-
-	location /experiment {
+	
+	location /without_module {
 
 		include proxy_params;
 		proxy_buffering on;
 		proxy_cache my_cache;
 		proxy_cache_valid any 10m;
+
+		add_header X-Proxy-Cache $upstream_cache_status;
 
 		proxy_set_header X-Flagship-Flags "noflag";
 
