@@ -100,7 +100,10 @@ server {
 
 		add_header X-Proxy-Cache $upstream_cache_status;
 
-		proxy_set_header X-Flagship-Flags "noflag";
+		set $visitor_context browser:$browser_type;
+
+		proxy_set_header X-Visitor-Id $request_id;
+		proxy_set_header X-Visitor-Context $visitor_context;
 
 		default_type text/html;
 
