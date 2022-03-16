@@ -2,6 +2,8 @@ const express = require('express')
 const app = express()
 const port = 8081
 
+app.set('etag', false)
+
 app.get('/test', (req, res) => {
     console.log("flags " + req.get('x-flagship-flags'))
     console.log("user agent " + req.get('user-agent'))
