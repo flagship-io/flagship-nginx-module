@@ -235,58 +235,7 @@ static void initialize_flagship_sdk(char *sdk_path, ngx_http_request_t *r)
 
 static ngx_int_t ngx_http_fs_sdk_get_all_flags_handler(ngx_http_request_t *r)
 {
-    ngx_int_t rc;
-    ngx_buf_t *b;
-    ngx_chain_t out;
-
-    /* Set the Content-Type header. */
-    r->headers_out.content_type.len = sizeof("text/plain") - 1;
-    r->headers_out.content_type.data = (u_char *)"text/plain";
-
-    /* Allocate a new buffer for sending out the reply. */
-    b = ngx_palloc(r->pool, sizeof(ngx_buf_t));
-    if (b == NULL)
-    {
-        return NGX_ERROR;
-    }
-
-    rc = ngx_http_discard_request_body(r);
-
-    if (rc != NGX_OK)
-    {
-        return rc;
-    }
-
-    /* Insertion in the buffer chain. */
-    out.buf = b;
-    out.next = NULL; /* just one buffer */
-
-    //b->last = ngx_sprintf(b->last, "Active connections: %s \n", cglcf->visitor_flags.data);
-
-    b->last= NULL;
-
-    r->headers_out.status = NGX_HTTP_OK;
-
-    r->headers_out.content_length_n = b->last - b->pos;
-
-    b->last_buf = (r == r->main) ? 1 : 0;
-
-    b->last_in_chain = 1;
-
-    /* Sending the headers for the reply. */
-    r->headers_out.status = NGX_HTTP_OK; /* 200 status code */
-    /* Get the content length of the body. */
-    r->headers_out.content_length_n = sizeof(long int);
-    ngx_http_send_header(r); /* Send the headers */
-
-    if (rc == NGX_ERROR || rc > NGX_OK || r->header_only)
-    {
-        return rc;
-    }
-
-    ngx_free(b);
-    /* Send the body, and return the status code of the output filter chain. */
-    return ngx_http_output_filter(r, &out);
+  return NGX_DONE;
 } /* ngx_http_fs_sdk_handler */
 
 /**
@@ -486,7 +435,7 @@ static ngx_int_t ngx_http_fs_sdk_variable(ngx_http_request_t *r, ngx_http_variab
 
 #else
 
-    flags = "Flagship sdk disabled";
+    value = "Flagship sdk disabled";
 
 #endif
 
@@ -520,6 +469,8 @@ static ngx_int_t ngx_http_fs_sdk_variable(ngx_http_request_t *r, ngx_http_variab
     v->no_cacheable = 0;
     v->not_found = 0;
     v->data = p;
+
+    ngx_free(value);
     
     return NGX_OK;
 }
