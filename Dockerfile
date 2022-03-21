@@ -10,12 +10,14 @@ ENV TZ=Europe/London \
     NGX_VERSION=1.18.*
 
 # Update aptitude with new repo
+RUN apt-get update
+
 RUN apt-get update -y --fix-missing
 
 RUN apt-get upgrade -y
 
 # Install software 
-RUN apt-get install -y --allow-downgrades curl build-essential inotify-tools libbsd-dev wget libc-dev libunwind-dev make gcc libc6 zlib1g=1:1.2.11.dfsg-2ubuntu1.2 liblzma-dev liblzma5=5.2.4-1ubuntu1 libpcre3 libpcre3-dev libpcre++-dev zlib1g-dev libbz2-dev libxslt1-dev libxml2-dev libgeoip-dev libgoogle-perftools-dev libperl-dev libssl-dev libcurl4-openssl-dev libatomic-ops-dev nginx=${NGX_VERSION}
+RUN apt-get install -y --allow-downgrades curl apache2-utils build-essential inotify-tools libbsd-dev wget libc-dev libunwind-dev make gcc libc6 zlib1g=1:1.2.11.dfsg-2ubuntu1.2 liblzma-dev liblzma5=5.2.4-1ubuntu1 libpcre3 libpcre3-dev libpcre++-dev zlib1g-dev libbz2-dev libxslt1-dev libxml2-dev libgeoip-dev libgoogle-perftools-dev libperl-dev libssl-dev libcurl4-openssl-dev libatomic-ops-dev nginx=${NGX_VERSION}
 
 ENV TINI_VERSION v0.19.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini

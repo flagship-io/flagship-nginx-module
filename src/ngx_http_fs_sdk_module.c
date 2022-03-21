@@ -38,7 +38,6 @@ typedef struct
     ngx_array_t *visitor_context_lengths;
     ngx_array_t *visitor_context_values;
     ngx_str_t visitor_context;
-    /*ngx_str_t visitor_id; */
     ngx_str_t visitor_flags;
 
 } ngx_http_fs_sdk_init_loc_conf_t;
@@ -50,7 +49,7 @@ static void *ngx_http_fs_sdk_init_create_loc_conf(ngx_conf_t *cf)
     conf = ngx_pcalloc(cf->pool, sizeof(ngx_http_fs_sdk_init_loc_conf_t));
     if (conf == NULL)
     {
-        return NULL;
+        return NGX_CONF_ERROR;
     }
 
     return conf;
@@ -242,16 +241,12 @@ static ngx_int_t ngx_http_fs_sdk_get_all_flags_handler(ngx_http_request_t *r)
     ngx_buf_t *b;
     ngx_chain_t out;
 
-    ngx_http_fs_sdk_init_loc_conf_t *cglcf;
-
-    cglcf = ngx_http_get_module_loc_conf(r, ngx_http_fs_sdk_module);
-
     /* Set the Content-Type header. */
     r->headers_out.content_type.len = sizeof("text/plain") - 1;
     r->headers_out.content_type.data = (u_char *)"text/plain";
 
     /* Allocate a new buffer for sending out the reply. */
-    b = ngx_pcalloc(r->pool, sizeof(ngx_buf_t));
+    b = ngx_palloc(r->pool, sizeof(ngx_buf_t));
     if (b == NULL)
     {
         return NGX_ERROR;
@@ -268,7 +263,9 @@ static ngx_int_t ngx_http_fs_sdk_get_all_flags_handler(ngx_http_request_t *r)
     out.buf = b;
     out.next = NULL; /* just one buffer */
 
-    b->last = ngx_sprintf(b->last, "Active connections: %s \n", cglcf->visitor_flags.data);
+    //b->last = ngx_sprintf(b->last, "Active connections: %s \n", cglcf->visitor_flags.data);
+
+    b->last= NULL;
 
     r->headers_out.status = NGX_HTTP_OK;
 
@@ -281,14 +278,15 @@ static ngx_int_t ngx_http_fs_sdk_get_all_flags_handler(ngx_http_request_t *r)
     /* Sending the headers for the reply. */
     r->headers_out.status = NGX_HTTP_OK; /* 200 status code */
     /* Get the content length of the body. */
-    r->headers_out.content_length_n = ((long int)ngx_strlen((const char *)cglcf->visitor_flags.data));
+    r->headers_out.content_length_n = sizeof(long int);
     ngx_http_send_header(r); /* Send the headers */
 
     if (rc == NGX_ERROR || rc > NGX_OK || r->header_only)
     {
         return rc;
     }
-
+    
+    free(b);
     /* Send the body, and return the status code of the output filter chain. */
     return ngx_http_output_filter(r, &out);
 } /* ngx_http_fs_sdk_handler */
@@ -419,7 +417,6 @@ static char *ngx_http_get_all_flags(ngx_conf_t *cf, ngx_command_t *cmd, void *co
 {
     ngx_http_core_loc_conf_t *clcf; /* pointer to core location configuration */
 
-    /* Install the hello world handler. */
     clcf = ngx_http_conf_get_module_loc_conf(cf, ngx_http_core_module);
     clcf->handler = ngx_http_fs_sdk_get_all_flags_handler;
 
@@ -428,7 +425,6 @@ static char *ngx_http_get_all_flags(ngx_conf_t *cf, ngx_command_t *cmd, void *co
 
 static char *ngx_http_fs_sdk(ngx_conf_t *cf, void *post, void *data)
 {
-
     ngx_http_core_loc_conf_t *clcf;
 
     clcf = ngx_http_conf_get_module_loc_conf(cf, ngx_http_core_module);
@@ -455,9 +451,8 @@ static ngx_int_t ngx_http_fs_sdk_add_variables(ngx_conf_t *cf)
 
 static ngx_int_t ngx_http_fs_sdk_variable(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data)
 {
-    u_char *p;
-    u_char *value;
-    char *flags;
+    u_char *p = (unsigned char *)malloc(sizeof(p));
+    u_char *value = (unsigned char *)malloc(sizeof(value));
 
 #if FLAGSHIP_SDK_ENABLED
 
@@ -470,10 +465,11 @@ static ngx_int_t ngx_http_fs_sdk_variable(ngx_http_request_t *r, ngx_http_variab
     ngx_str_t visitor_id;
     ngx_http_script_run(r, &visitor_id, cglcf->visitor_id_lengths->elts, 0, cglcf->visitor_id_values->elts);
 
-    char* visitorIdRaw = (char *)visitor_id.data;
     char* visitorId = (char*)malloc(visitor_id.len+1);
-    strlcpy(visitorId, visitorIdRaw, visitor_id.len+1);
+    strlcpy(visitorId, (char *)visitor_id.data, visitor_id.len+1);
+    
     ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "visitor ID : %s", visitorId);
+
     if (visitor_id.data == NULL)
     {
         ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "no visitor_id defined");
@@ -483,9 +479,9 @@ static ngx_int_t ngx_http_fs_sdk_variable(ngx_http_request_t *r, ngx_http_variab
     ngx_str_t visitor_context;
     ngx_http_script_run(r, &visitor_context, cglcf->visitor_context_lengths->elts, 0, cglcf->visitor_context_values->elts);
 
-    char* visitorContextRaw = (char *)visitor_context.data;
     char* visitorContext = (char*)malloc(visitor_context.len+1);
-    strlcpy(visitorContext, visitorContextRaw, visitor_context.len+1);
+    strlcpy(visitorContext, (char *)visitor_context.data, visitor_context.len+1);
+    
     ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "visitor Context : %s", visitorContext);
 
     if (visitorContext == NULL)
@@ -493,8 +489,6 @@ static ngx_int_t ngx_http_fs_sdk_variable(ngx_http_request_t *r, ngx_http_variab
         ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "no context defined");
         exit(1);
     }
-
-    flags = get_all_flags(visitorId, visitorContext);
 
 #else
 
@@ -514,12 +508,16 @@ static ngx_int_t ngx_http_fs_sdk_variable(ngx_http_request_t *r, ngx_http_variab
 
     case 0:
 
-        value = (u_char *)flags;
+        value = (u_char *)get_all_flags(visitorId, visitorContext);
+
+        free(visitorId); 
+        free(visitorContext); 
+        //free(value);  
         break;
+
     default:
 
         value = 0;
-
         break;
     }
 
@@ -528,6 +526,6 @@ static ngx_int_t ngx_http_fs_sdk_variable(ngx_http_request_t *r, ngx_http_variab
     v->no_cacheable = 0;
     v->not_found = 0;
     v->data = p;
-
+    //free(p);
     return NGX_OK;
 }
