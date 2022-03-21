@@ -4,7 +4,7 @@
 
 Flagship IO perform the operation of feature management at the front-end level (JavaScript) or back-end level (web application languages such as Java, Android, iOS, PHP, TypeScript, etc ...). Many clients however employ significant caching strategies for performance reasons. Using this strategy prevent the HTTP requests to reach the back-end application servers, because a front-facing web server responds directly with a cached version in nginx of the requested page. Unfortunately in this case, the back-end SDKs cannot be used, since the logic of feature management that happens in the back-end application won't execute anyway. To put it another way, code that execute feature management techniques will never be executed.
 
-So solve this issue, we created the Flagship nginx module for one of the most popular web servers on the market today to provide a solution for this problem.
+To solve this issue, we created the Flagship nginx module for one of the most popular web servers on the market today to provide a solution for this problem.
 At the web server level, this allows to determine which feature will be utilized by each visitor using Go wrapper for C, so that we can perform feature management in web sever level.
 As a result, the server can respond with a cached version of the proper variation using table key/value provided by nginx, allowing regular caching schemes to function normally.
 
