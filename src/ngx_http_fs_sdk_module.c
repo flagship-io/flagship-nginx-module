@@ -37,8 +37,6 @@ typedef struct
     ngx_array_t *visitor_id_values;
     ngx_array_t *visitor_context_lengths;
     ngx_array_t *visitor_context_values;
-    ngx_str_t visitor_context;
-    ngx_str_t visitor_flags;
 
 } ngx_http_fs_sdk_init_loc_conf_t;
 
@@ -285,8 +283,8 @@ static ngx_int_t ngx_http_fs_sdk_get_all_flags_handler(ngx_http_request_t *r)
     {
         return rc;
     }
-    
-    free(b);
+
+    ngx_free(b);
     /* Send the body, and return the status code of the output filter chain. */
     return ngx_http_output_filter(r, &out);
 } /* ngx_http_fs_sdk_handler */
@@ -364,19 +362,17 @@ static char *ngx_http_get_visitor_id(ngx_conf_t *cf, ngx_command_t *cmd, void *c
 {
     ngx_http_fs_sdk_init_loc_conf_t *loc_conf;
     ngx_str_t *value;
-    ngx_str_t *fs_visitor_id;
     ngx_http_script_compile_t script_compile;
 
     loc_conf = conf;
     value = cf->args->elts;
-    fs_visitor_id = &value[1];
 
     ngx_memzero(&script_compile, sizeof(ngx_http_script_compile_t));
     script_compile.cf = cf;
-    script_compile.source = fs_visitor_id;
+    script_compile.source = &value[1];
     script_compile.lengths = &loc_conf->visitor_id_lengths;
     script_compile.values = &loc_conf->visitor_id_values;
-    script_compile.variables = ngx_http_script_variables_count(fs_visitor_id);
+    script_compile.variables = ngx_http_script_variables_count(&value[1]);
     script_compile.complete_lengths = 1;
     script_compile.complete_values = 1;
 
@@ -391,19 +387,17 @@ static char *ngx_http_get_visitor_context(ngx_conf_t *cf, ngx_command_t *cmd, vo
 {
     ngx_http_fs_sdk_init_loc_conf_t *loc_conf;
     ngx_str_t *value;
-    ngx_str_t *fs_visitor_context;
     ngx_http_script_compile_t script_compile;
 
     loc_conf = conf;
     value = cf->args->elts;
-    fs_visitor_context = &value[1];
 
     ngx_memzero(&script_compile, sizeof(ngx_http_script_compile_t));
     script_compile.cf = cf;
-    script_compile.source = fs_visitor_context;
+    script_compile.source = &value[1];
     script_compile.lengths = &loc_conf->visitor_context_lengths;
     script_compile.values = &loc_conf->visitor_context_values;
-    script_compile.variables = ngx_http_script_variables_count(fs_visitor_context);
+    script_compile.variables = ngx_http_script_variables_count(&value[1]);
     script_compile.complete_lengths = 1;
     script_compile.complete_values = 1;
 
@@ -510,9 +504,9 @@ static ngx_int_t ngx_http_fs_sdk_variable(ngx_http_request_t *r, ngx_http_variab
 
         value = (u_char *)get_all_flags(visitorId, visitorContext);
 
-        free(visitorId); 
-        free(visitorContext); 
-        //free(value);  
+        ngx_free(visitorId); 
+        ngx_free(visitorContext); 
+
         break;
 
     default:
@@ -526,6 +520,6 @@ static ngx_int_t ngx_http_fs_sdk_variable(ngx_http_request_t *r, ngx_http_variab
     v->no_cacheable = 0;
     v->not_found = 0;
     v->data = p;
-    //free(p);
+    
     return NGX_OK;
 }
