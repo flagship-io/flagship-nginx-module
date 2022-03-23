@@ -38,9 +38,9 @@ RUN cd nginx-${NGINX_VERSION} && ./configure && make && make install
 
 COPY ./src /work_directory/ngx_http_fs_sdk_module
 
-COPY ./example/backend /work_directory/nginx-node-demo-vol
+COPY ./example/dev/backend /work_directory/nginx-node-demo-vol
 
-COPY ./example/backend /work_directory/nginx-node-demo
+COPY ./example/dev/backend /work_directory/nginx-node-demo
 
 RUN curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash 
 
@@ -53,7 +53,7 @@ RUN cd nginx-${NGINX_VERSION} && ./configure --with-compat --add-dynamic-module=
 
 RUN cd nginx-node-demo && npm install pm2 -g && npm install -y 
 
-COPY ./example/watcher.sh ./watcher.sh
+COPY ./example/dev/watcher.sh ./watcher.sh
 RUN chmod +x ./watcher.sh
 
 ENTRYPOINT ["/tini", "-g", "--", "./watcher.sh"]

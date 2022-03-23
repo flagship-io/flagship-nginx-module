@@ -1,0 +1,22 @@
+{
+    "name": "nodejs-example",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "node index.js",
+        "watch": "nodemon index.js",
+        "start_standalone": "pm2 start index.js",
+        "restart_standalone": "pm2 restart index.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@flagship.io/js-sdk": "^3.0.4",
+        "express": "^4.17.2",
+        "nodemon": "^2.0.15",
+        "pm2": "^5.2.0"
+    }
+}
