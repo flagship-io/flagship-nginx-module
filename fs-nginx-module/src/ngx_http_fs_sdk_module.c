@@ -409,7 +409,7 @@ static ngx_int_t ngx_http_fs_sdk_variable(ngx_http_request_t *r, ngx_http_variab
     ngx_http_script_run(r, &visitor_id, cglcf->visitor_id_lengths->elts, 0, cglcf->visitor_id_values->elts);
 
     char* visitorId = (char*)malloc(visitor_id.len+1);
-    strlcpy(visitorId, (char *)visitor_id.data, visitor_id.len+1);
+    ngx_cpystrn((u_char*)visitorId, (u_char *)visitor_id.data, visitor_id.len+1);
     
     ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "visitor ID : %s", visitorId);
 
@@ -423,7 +423,8 @@ static ngx_int_t ngx_http_fs_sdk_variable(ngx_http_request_t *r, ngx_http_variab
     ngx_http_script_run(r, &visitor_context, cglcf->visitor_context_lengths->elts, 0, cglcf->visitor_context_values->elts);
 
     char* visitorContext = (char*)malloc(visitor_context.len+1);
-    strlcpy(visitorContext, (char *)visitor_context.data, visitor_context.len+1);
+    
+    ngx_cpystrn((u_char*)visitorContext, (u_char*)visitor_context.data, visitor_context.len+1);
     
     ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "visitor Context : %s", visitorContext);
 
