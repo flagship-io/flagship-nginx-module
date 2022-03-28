@@ -25,15 +25,38 @@ The idea is to store the flag combination in cache table as a key, that refer to
 
 ### Installation
 
+There are 3 ways to install your nginx module
+
+**Warning** all these ways require to have the file libflagship.so in your system at this exact path
+
+```
+/usr/local/nginx/sbin/
+```
+
+#### Building from nginx source
+
+To build the flagship module's share object file you have to download the nginx source code in addition to some libraries in order to compile the C file into SO file that can be be used directly to your running nginx instance ! [Here's a small tuto](https://dev.to/armanism24/how-to-build-nginx-from-source-code-on-ubuntu-20-04-31e5)
+
 To link statically against nginx, cd to nginx source directory and execute:
 
+```
     ./configure --with-compat --add-module=/path/to/flagship-nginx-module --with-pcre
+```
 
 To compile as a dynamic module (nginx 1.8.0+), cd to nginx source directory and execute:
 
+```
     ./configure --with-compat --add-dynamic-module=/path/to/flagship-nginx-module --with-pcre
+```
 
 In this case, the `load_module` directive should be used in nginx.conf to load the module.
+For instance our case is
+
+```
+load_module modules/ngx_http_fs_sdk_module.so;
+```
+
+#### Building from docker
 
 ### Configuration
 
