@@ -1,7 +1,6 @@
 #!/bin/bash
 
-docker build -t make_nginx_module .
-docker run --rm -t --name make_nginx_module \
- -v $(pwd)/src:/work_directory/ngx_http_fs_sdk_module \
- -v $(pwd)/out:/work_directory/nginx_modules \
- make_nginx_module
+docker build -f Dockerfile.build -t flagshipio/nginx-module-builder .
+docker run --rm -t --name nginx-module-builder -e "NGINX_VERSION=1.21.6" \
+ -v $(pwd)/fs-nginx-module/out:/usr/lib/flagship-module \
+ flagshipio/nginx-module-builder

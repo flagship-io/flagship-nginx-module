@@ -1,5 +1,2 @@
 run.sh
 .dockerignore
-example/poc
-fs-nginx-module
-fs-nginx-module/*
