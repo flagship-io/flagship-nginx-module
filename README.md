@@ -340,6 +340,9 @@ Then restart nginx service.
 
 ## Reference
 
--[Nginx development guide](http://nginx.org/en/docs/dev/development_guide.html) -[Nginx module development](https://www.evanmiller.org/nginx-modules-guide.html)
+- [Nginx development guide](http://nginx.org/en/docs/dev/development_guide.html)
+- [Nginx module development](https://www.evanmiller.org/nginx-modules-guide.html)
+- [Echo module](https://github.com/openresty/echo-nginx-module)
+- [Extending nginx](https://www.nginx.com/resources/wiki/extending/)
 
 ## Copyright & License
