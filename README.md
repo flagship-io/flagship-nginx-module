@@ -14,7 +14,7 @@ To solve this issue, we created the Flagship nginx module for one of the most po
 At the web server level, this allows to determine which feature will be utilized by each visitor using Go wrapper for C, so that we can perform feature management in web sever level.
 As a result, the server can respond with a cached version of the proper variation using table key/value provided by nginx, allowing regular caching schemes to function normally.
 
-In brief, we introduce web experimentation at the web server level with these new modules.
+In brief, we introduce web experimentation at the web server level with this new module.
 This is a new level that sits in between the front-end and the nginx web server.
 
 ## Usage
@@ -33,14 +33,16 @@ The idea is to store the flag combination in cache table as a key, that refer to
 
 There are 3 ways to install your nginx module
 
-**Warning** all these ways require to have the file libflagship.so in your system at this exact path:
+**Warning**
+
+- All these ways require to have the file libflagship.so in your system at this exact path:
 
 ```
 /usr/local/nginx/sbin/
 ```
 
-**Warning** In this case, the `load_module` directive should be used in nginx.conf to load the module.
-For instance, in our case it's:
+- In this case, the `load_module` directive should be used in nginx.conf to load the module.
+  For instance, in our case it's:
 
 ```
 load_module modules/ngx_http_fs_sdk_module.so;
@@ -53,13 +55,13 @@ To build the flagship module share object file you have to download the nginx so
 To link statically against nginx, cd to nginx source directory and execute:
 
 ```
-    ./configure --with-compat --add-module=/path/to/flagship-nginx-module --with-pcre
+./configure --with-compat --add-module=/path/to/flagship-nginx-module --with-pcre
 ```
 
-To compile as a dynamic module (nginx 1.8.0+), cd to nginx source directory and execute:
+To compile as a dynamic module (nginx 1.18.0+), cd to nginx source directory and execute:
 
 ```
-    ./configure --with-compat --add-dynamic-module=/path/to/flagship-nginx-module --with-pcre
+./configure --with-compat --add-dynamic-module=/path/to/flagship-nginx-module --with-pcre
 ```
 
 #### Building from docker
@@ -158,7 +160,7 @@ IsVip:true;
 
 ## Running the example
 
-To run the example
+To run the example that include running nginx server that implement caching system and a simple nodejs web app run:
 
 ```
 ./example/run.sh
