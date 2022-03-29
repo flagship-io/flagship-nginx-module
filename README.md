@@ -1,3 +1,9 @@
+<p align="center">
+
+<img  src="https://mk0abtastybwtpirqi5t.kinstacdn.com/wp-content/uploads/picture-solutions-persona-product-flagship.jpg"  width="211"  height="182"  alt="flagship-nginx-module"  />
+
+</p>
+
 # Flagship Module for Nginx
 
 ## Introduction
@@ -27,15 +33,22 @@ The idea is to store the flag combination in cache table as a key, that refer to
 
 There are 3 ways to install your nginx module
 
-**Warning** all these ways require to have the file libflagship.so in your system at this exact path
+**Warning** all these ways require to have the file libflagship.so in your system at this exact path:
 
 ```
 /usr/local/nginx/sbin/
 ```
 
+**Warning** In this case, the `load_module` directive should be used in nginx.conf to load the module.
+For instance, in our case it's:
+
+```
+load_module modules/ngx_http_fs_sdk_module.so;
+```
+
 #### Building from nginx source
 
-To build the flagship module's share object file you have to download the nginx source code in addition to some libraries in order to compile the C file into SO file that can be be used directly to your running nginx instance ! [Here's a small tuto](https://dev.to/armanism24/how-to-build-nginx-from-source-code-on-ubuntu-20-04-31e5)
+To build the flagship module share object file you have to download the nginx source code in addition to some libraries in order to compile the C file into SO file that can be be used directly to your running nginx server ! [Here's a small tuto](https://dev.to/armanism24/how-to-build-nginx-from-source-code-on-ubuntu-20-04-31e5)
 
 To link statically against nginx, cd to nginx source directory and execute:
 
@@ -49,14 +62,25 @@ To compile as a dynamic module (nginx 1.8.0+), cd to nginx source directory and 
     ./configure --with-compat --add-dynamic-module=/path/to/flagship-nginx-module --with-pcre
 ```
 
-In this case, the `load_module` directive should be used in nginx.conf to load the module.
-For instance our case is
-
-```
-load_module modules/ngx_http_fs_sdk_module.so;
-```
-
 #### Building from docker
+
+We have build and published a docker image that you can pull from [Dockerhub](https://hub.docker.com/repository/docker/flagshipio/nginx-module-builder) or simply run the command
+
+```
+docker run --rm -t --name nginx-module-builder -e "NGINX_VERSION=1.21.6" \
+ -v $(pwd)/fs-nginx-module/out:/usr/lib/flagship-module \
+ flagshipio/nginx-module-builder
+```
+
+The docker will run a container that include all the dependecing that are needed to generate the module as a shared object file, then you can export it using volumes.
+Note that you are required to specify the nginx version you want to generate as an environment variable.
+**Warning** If the pipeline fails, please check that your version support nginx development kit !
+
+#### Building from Github action
+
+In order to run github action pipeline, you will have to fork the project and run it with your own runners. The pipeline generate an artifacts that include the shared object to inject in your nginx running server.
+Note that you have to choose your version in the dropbox or check the box to insert the nginx version that you want (Example: 1.8.6)
+**Warning** If the pipeline fails, please check that your version support nginx development kits !
 
 ### Configuration
 
