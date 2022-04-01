@@ -1,13 +1,13 @@
 /**
  * @file   ngx_http_fs_sdk_module.c
  * @author Chadi LAOULAOU <chadi.laoulaou@abtasty.com>
- * @date   ***********
+ * @date   April 1st, 2022 4:31PM
  *
  * @brief  A Flagship SDK module for Nginx.
  *
  * @section LICENSE
  *
- * Copyright (C) 2021
+ * Copyright (C) 2022
  *
  */
 
@@ -70,32 +70,28 @@ static char *(*get_all_flags)(char *, char *);
 static ngx_command_t ngx_http_fs_sdk_commands[] = {
 
     {ngx_string("fs_init"),                             /* directive */
-     NGX_HTTP_SRV_CONF | NGX_CONF_TAKE5,                /* location context and takes
-                                            no arguments*/
+     NGX_HTTP_SRV_CONF | NGX_CONF_TAKE5,                /* location context and takes no arguments*/
      ngx_http_add_params,                               /* configuration setup function */
      NGX_HTTP_SRV_CONF_OFFSET,                          /* No offset. Only one context is supported. */
      offsetof(ngx_http_fs_sdk_init_loc_conf_t, params), /* No offset when storing the module configuration on struct. */
      NULL},
 
-    {ngx_string("fs_visitor_id"),                                  /* directive */
-     NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,                           /* location context and takes
-                                            no arguments*/
-     ngx_http_get_visitor_id,                                       /* configuration setup function */
-     NGX_HTTP_LOC_CONF_OFFSET,                                     /* No offset. Only one context is supported. */
-     0,                                                            /* No offset when storing the module configuration on struct. */
+    {ngx_string("fs_visitor_id"),         /* directive */
+     NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,  /* location context and takes no arguments*/
+     ngx_http_get_visitor_id,             /* configuration setup function */
+     NGX_HTTP_LOC_CONF_OFFSET,            /* No offset. Only one context is supported. */
+     0,                                   /* No offset when storing the module configuration on struct. */
      NULL},
 
-    {ngx_string("fs_visitor_context"),                                  /* directive */
-     NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,                                /* location context and takes
-                                            no arguments*/
-     ngx_http_get_visitor_context,                                            /* configuration setup function */
-     NGX_HTTP_LOC_CONF_OFFSET,                                          /* No offset. Only one context is supported. */
-     0, /* No offset when storing the module configuration on struct. */
+    {ngx_string("fs_visitor_context"),    /* directive */
+     NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,  /* location context and takes no arguments*/
+     ngx_http_get_visitor_context,        /* configuration setup function */
+     NGX_HTTP_LOC_CONF_OFFSET,            /* No offset. Only one context is supported. */
+     0,                                   /* No offset when storing the module configuration on struct. */
      NULL},
 
     {ngx_string("fs_get_all_flags"),      /* directive */
-     NGX_HTTP_LOC_CONF | NGX_CONF_NOARGS, /* location context and takes
-                                            no arguments*/
+     NGX_HTTP_LOC_CONF | NGX_CONF_NOARGS, /* location context and takes no arguments*/
      ngx_http_get_all_flags,              /* configuration setup function */
      NGX_HTTP_LOC_CONF_OFFSET,            /* No offset. Only one context is supported. */
      0,                                   /* No offset when storing the module configuration on struct. */
@@ -145,8 +141,6 @@ static ngx_http_variable_t ngx_http_fs_sdk_vars[] = {
 #if FLAGSHIP_SDK_ENABLED
 static void initialize_flagship_sdk(char *sdk_path, ngx_http_request_t *r)
 {
-
-    printf("initilize flagship !");
 
     if (flagship_sdk_initialized == 1)
     {
@@ -220,6 +214,7 @@ static void initialize_flagship_sdk(char *sdk_path, ngx_http_request_t *r)
        
     //create the sdk init handle
     init_flagship((char *)env_id_string.data, (char *)api_key_string.data, atoi((char*) timeout_string.data), (char *)log_level_string.data, atoi((char*) tracking_enabled_string.data));
+    
     flagship_sdk_initialized = 1;
 }
 #endif
@@ -304,7 +299,7 @@ static char *ngx_http_add_params(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 #endif
 
     return NGX_CONF_OK;
-}
+} /* ngx_http_add_params */
 
 
 static char *ngx_http_get_visitor_id(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
@@ -358,7 +353,7 @@ static char *ngx_http_get_visitor_context(ngx_conf_t *cf, ngx_command_t *cmd, vo
 
 static char *ngx_http_get_all_flags(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
-    ngx_http_core_loc_conf_t *clcf; /* pointer to core location configuration */
+    ngx_http_core_loc_conf_t *clcf;
 
     clcf = ngx_http_conf_get_module_loc_conf(cf, ngx_http_core_module);
     clcf->handler = ngx_http_fs_sdk_get_all_flags_handler;
