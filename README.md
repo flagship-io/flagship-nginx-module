@@ -69,7 +69,7 @@ To compile as a dynamic module (nginx 1.18.0+), cd to nginx source directory and
 We have build and published a docker image that you can pull from [Dockerhub](https://hub.docker.com/repository/docker/flagshipio/nginx-module-builder) or simply run the command
 
 ```
-docker run --rm -t --name nginx-module-builder -e "NGINX_VERSION=1.21.6" \
+docker run --rm -t --name nginx-module-builder -e "NGINX_VERSION=1.20.2" \
  -v $(pwd)/fs-nginx-module/out:/usr/lib/flagship-module \
  flagshipio/nginx-module-builder
 ```
@@ -170,7 +170,7 @@ To run the example that include running nginx server that implement caching syst
 
 ```
 docker run --rm -it -p 8080:80 -t --name nginx-standalone \
- flagshipio/nginx:nginx-1.21.6
+ flagshipio/nginx:nginx-1.20.2
 ```
 
 **Or** run:
