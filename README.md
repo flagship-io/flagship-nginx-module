@@ -338,11 +338,117 @@ load_module modules/ngx_http_fs_sdk_module.so;
 
 Then restart nginx service.
 
+## Performance & Benchmarking
+
+```
+[ec2-user@ip-172-31-32-204 ~]$ cat /proc/cpuinfo
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 63
+model name      : Intel(R) Xeon(R) CPU E5-2676 v3 @ 2.40GHz
+stepping        : 2
+microcode       : 0x46
+cpu MHz         : 2399.874
+cache size      : 30720 KB
+physical id     : 0
+siblings        : 1
+core id         : 0
+cpu cores       : 1
+apicid          : 0
+initial apicid  : 0
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 13
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx rdtscp lm constant_tsc rep_good nopl xtopology cpuid tsc_known_freq pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm cpuid_fault invpcid_single pti fsgsbase bmi1 avx2 smep bmi2 erms invpcid xsaveopt
+bugs            : cpu_meltdown spectre_v1 spectre_v2 spec_store_bypass l1tf mds swapgs itlb_multihit
+bogomips        : 4800.03
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 46 bits physical, 48 bits virtual
+power management:
+```
+
+```
+ab -n 1000000 -c 500 http://localhost/with_module
+```
+
+```
+This is ApacheBench, Version 2.3 <$Revision: 1879490 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking localhost (be patient)
+Completed 100000 requests
+Completed 200000 requests
+Completed 300000 requests
+Completed 400000 requests
+Completed 500000 requests
+Completed 600000 requests
+Completed 700000 requests
+Completed 800000 requests
+Completed 900000 requests
+Completed 1000000 requests
+Finished 1000000 requests
+
+
+Server Software:        nginx/1.20.0
+Server Hostname:        localhost
+Server Port:            80
+
+Document Path:          /with_module
+Document Length:        14 bytes
+
+Concurrency Level:      500
+Time taken for tests:   440.062 seconds
+Complete requests:      1000000
+Failed requests:        0
+Total transferred:      156000000 bytes
+HTML transferred:       14000000 bytes
+Requests per second:    2272.41 [#/sec] (mean)
+Time per request:       220.031 [ms] (mean)
+Time per request:       0.440 [ms] (mean, across all concurrent requests)
+Transfer rate:          346.19 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   0.6      0      41
+Processing:    13  220   5.6    219     259
+Waiting:        0  220   5.6    219     259
+Total:         39  220   5.3    220     259
+
+Percentage of the requests served within a certain time (ms)
+  50%    220
+  66%    221
+  75%    222
+  80%    223
+  90%    225
+  95%    228
+  98%    234
+  99%    239
+ 100%    259 (longest request)
+```
+
 ## Reference
 
 - [Nginx development guide](http://nginx.org/en/docs/dev/development_guide.html)
 - [Nginx module development](https://www.evanmiller.org/nginx-modules-guide.html)
 - [Echo module](https://github.com/openresty/echo-nginx-module)
 - [Extending nginx](https://www.nginx.com/resources/wiki/extending/)
+
+## Contributors
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+
+</table>
+
+<!-- markdownlint-enable -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## Copyright & License
