@@ -27,8 +27,6 @@ static ngx_int_t ngx_http_fs_sdk_variable(ngx_http_request_t *r, ngx_http_variab
 static ngx_int_t ngx_http_fs_sdk_add_variables(ngx_conf_t *cf);
 static ngx_int_t ngx_http_fs_sdk_get_all_flags_handler(ngx_http_request_t *r);
 static char *ngx_http_add_params(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
-static char *ngx_http_fs_sdk(ngx_conf_t *cf, void *post, void *data);
-static ngx_conf_post_handler_pt ngx_http_fs_sdk_p = ngx_http_fs_sdk;
 
 typedef struct
 {
@@ -85,7 +83,7 @@ static ngx_command_t ngx_http_fs_sdk_commands[] = {
      ngx_http_get_visitor_id,                                       /* configuration setup function */
      NGX_HTTP_LOC_CONF_OFFSET,                                     /* No offset. Only one context is supported. */
      0,                                                            /* No offset when storing the module configuration on struct. */
-     &ngx_http_fs_sdk_p},
+     NULL},
 
     {ngx_string("fs_visitor_context"),                                  /* directive */
      NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,                                /* location context and takes
@@ -93,7 +91,7 @@ static ngx_command_t ngx_http_fs_sdk_commands[] = {
      ngx_http_get_visitor_context,                                            /* configuration setup function */
      NGX_HTTP_LOC_CONF_OFFSET,                                          /* No offset. Only one context is supported. */
      0, /* No offset when storing the module configuration on struct. */
-     &ngx_http_fs_sdk_p},
+     NULL},
 
     {ngx_string("fs_get_all_flags"),      /* directive */
      NGX_HTTP_LOC_CONF | NGX_CONF_NOARGS, /* location context and takes
@@ -202,7 +200,9 @@ static void initialize_flagship_sdk(char *sdk_path, ngx_http_request_t *r)
     ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "dlopen succeded");
 
     ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "looking up flagship_sdk_initialization");
+    
     init_flagship = dlsym(handle, "initFlagship");
+    
     if ((error = dlerror()) != NULL)
     {
         ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, error);
@@ -366,15 +366,6 @@ static char *ngx_http_get_all_flags(ngx_conf_t *cf, ngx_command_t *cmd, void *co
     return NGX_CONF_OK;
 } /* ngx_http_get_all_flags */
 
-static char *ngx_http_fs_sdk(ngx_conf_t *cf, void *post, void *data)
-{
-    ngx_http_core_loc_conf_t *clcf;
-
-    clcf = ngx_http_conf_get_module_loc_conf(cf, ngx_http_core_module);
-    clcf->handler = ngx_http_fs_sdk_get_all_flags_handler;
-
-    return NGX_CONF_OK;
-}
 
 static ngx_int_t ngx_http_fs_sdk_add_variables(ngx_conf_t *cf)
 {
