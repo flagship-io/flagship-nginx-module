@@ -340,6 +340,8 @@ Then restart nginx service.
 
 ## Performance & Benchmarking
 
+Here's CPU information about the Amazon Linux AMI EC2 instance (t2.micro) that run the test:
+
 ```
 [ec2-user@ip-172-31-32-204 ~]$ cat /proc/cpuinfo
 processor       : 0
@@ -370,9 +372,13 @@ address sizes   : 46 bits physical, 48 bits virtual
 power management:
 ```
 
+The tests were executed using apache benchmark tool with this command:
+
 ```
 ab -n 1000000 -c 500 http://localhost/with_module
 ```
+
+Here's the test's result:
 
 ```
 This is ApacheBench, Version 2.3 <$Revision: 1879490 $>
@@ -401,22 +407,22 @@ Document Path:          /with_module
 Document Length:        14 bytes
 
 Concurrency Level:      500
-Time taken for tests:   440.062 seconds
+Time taken for tests:   440.430 seconds
 Complete requests:      1000000
 Failed requests:        0
 Total transferred:      156000000 bytes
 HTML transferred:       14000000 bytes
-Requests per second:    2272.41 [#/sec] (mean)
-Time per request:       220.031 [ms] (mean)
+Requests per second:    2270.51 [#/sec] (mean)
+Time per request:       220.215 [ms] (mean)
 Time per request:       0.440 [ms] (mean, across all concurrent requests)
-Transfer rate:          346.19 [Kbytes/sec] received
+Transfer rate:          345.90 [Kbytes/sec] received
 
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    0   0.6      0      41
-Processing:    13  220   5.6    219     259
-Waiting:        0  220   5.6    219     259
-Total:         39  220   5.3    220     259
+Connect:        0    0   0.5      0      30
+Processing:    13  220   6.4    220     338
+Waiting:        0  220   6.4    219     338
+Total:         27  220   6.2    220     338
 
 Percentage of the requests served within a certain time (ms)
   50%    220
@@ -425,9 +431,9 @@ Percentage of the requests served within a certain time (ms)
   80%    223
   90%    225
   95%    228
-  98%    234
-  99%    239
- 100%    259 (longest request)
+  98%    235
+  99%    240
+ 100%    338 (longest request)
 ```
 
 ## Reference
@@ -443,8 +449,10 @@ Percentage of the requests served within a certain time (ms)
 <table>
   <tr>
     <td align="center"><a href="https://github.com/Chadiii"><img src="https://avatars.githubusercontent.com/u/49269946?v=4" width="100px;" alt=""/><br /><sub><b>Chadi LAOULAOU</b></sub></a></td>
-    <td align="center"><a href="https://github.com/guillaumejacquart"><img src="https://avatars2.githubusercontent.com/u/5268752?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Guillaume Jacquart</b></sub></td>
+    <td align="center"><a href="https://github.com/guillaumejacquart"><img src="https://avatars2.githubusercontent.com/u/5268752?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Guillaume JACQUART</b></sub></td>
   </tr>
 </table>
 
-## Copyright & License
+## License
+
+[Apache License.](https://github.com/flagship-io/flagship-nginx-module/blob/master/LICENSE)
