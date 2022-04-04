@@ -436,19 +436,15 @@ Percentage of the requests served within a certain time (ms)
 - [Nginx module development](https://www.evanmiller.org/nginx-modules-guide.html)
 - [Echo module](https://github.com/openresty/echo-nginx-module)
 - [Extending nginx](https://www.nginx.com/resources/wiki/extending/)
+- [Introduction to NGINX Modules - Nicholas O'Brien](https://www.youtube.com/watch?v=rGs-6FgwtcQ)
 
 ## Contributors
 
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
 <table>
-
+  <tr>
+    <td align="center"><a href="https://github.com/Chadiii"><img src="https://avatars.githubusercontent.com/u/49269946?v=4" width="100px;" alt=""/><br /><sub><b>Chadi LAOULAOU</b></sub></a></td>
+    <td align="center"><a href="https://github.com/guillaumejacquart"><img src="https://avatars2.githubusercontent.com/u/5268752?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Guillaume Jacquart</b></sub></td>
+  </tr>
 </table>
-
-<!-- markdownlint-enable -->
-<!-- prettier-ignore-end -->
-
-<!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## Copyright & License
