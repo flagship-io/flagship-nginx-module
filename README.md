@@ -50,7 +50,7 @@ load_module modules/ngx_http_fs_sdk_module.so;
 
 #### Building from nginx source
 
-To build the flagship module share object file you have to download the nginx source code in addition to some libraries in order to compile the C file into SO file that can be be used directly to your running nginx server ! [Here's a small tuto](https://dev.to/armanism24/how-to-build-nginx-from-source-code-on-ubuntu-20-04-31e5)
+To build the flagship module share object file you have to download the nginx source code in addition to some libraries in order to compile the C file into SO file that can be be used directly to your running nginx server ! [Here's a small tuto](https://flagship.io/)
 
 To link statically against nginx, cd to nginx source directory and execute:
 
@@ -58,7 +58,7 @@ To link statically against nginx, cd to nginx source directory and execute:
 ./configure --with-compat --add-module=/path/to/flagship-nginx-module --with-pcre
 ```
 
-To compile as a dynamic module (nginx 1.18.0+), cd to nginx source directory and execute:
+To compile as a dynamic module (nginx 1.16.1+), cd to nginx source directory and execute:
 
 ```
 ./configure --with-compat --add-dynamic-module=/path/to/flagship-nginx-module --with-pcre
@@ -207,7 +207,7 @@ proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=my_cache:10m;
 
 
 map $http_user_agent $browser_type {
-    default                                 "Edge";
+    default                          "Edge";
     "~Mozilla.*Firefox*"             "Firefox";
     "~Chrome*"                       "Chrome";
 }
