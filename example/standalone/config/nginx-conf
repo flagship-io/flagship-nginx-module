@@ -23,7 +23,7 @@ proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=my_cache:10m;
 
 
 map $http_user_agent $browser_type {
-    default                                 "Edge";
+    default                          "Edge";
     "~Mozilla.*Firefox*"             "Firefox";
     "~Chrome*"                       "Chrome";
 }
@@ -57,9 +57,10 @@ server {
 	server_name _;
 	error_log /var/log/nginx/error.log debug;
 	
-	fs_init 'c0n48jn5thv01k0ijmo0' 'BsIK86oh7c12c9G7ce4Wm1yBlWeaMf3t1S0xyYzI' '500' 'ERROR' '0';
+	# replace envId & apiKey with your own flagship credentials, for pollingInterval, logLevel, trackingEnabled check the documentation
+	fs_init 'envId' 'apiKey' 'pollingInterval' 'logLevel' 'trackingEnabled';
 	
-	location /with_module {
+	location /with_cache {
 
 		fs_visitor_id $request_id;
 		fs_visitor_context browser:$browser_type;
@@ -71,7 +72,6 @@ server {
 		proxy_cache my_cache;
 		proxy_cache_valid any 10m;
 
-		add_header X-Proxy-Cache $upstream_cache_status;
 		add_header X-Flags $fs_flags;
 		add_header X-Browser_type $browser_type;
 
@@ -85,26 +85,18 @@ server {
 
 		return 200 $fs_flags;
 	}
-	
-	location /without_module {
 
-		proxy_buffering on;
-		proxy_cache my_cache;
-		proxy_cache_valid any 10m;
+    	location /without_cache {
 
-		add_header X-Proxy-Cache $upstream_cache_status;
-
-		set $visitor_context browser:$browser_type;
-
-		proxy_set_header X-Visitor-Id $request_id;
-		proxy_set_header X-Visitor-Context $visitor_context;
+		fs_visitor_id $browser_type;
+		fs_visitor_context example:version1;
+		fs_get_all_flags;
 
 		default_type text/html;
 
 		return 200 $fs_flags;
-
 	}
-
+	
 	# pass PHP scripts to FastCGI server
 	#
 	#location ~ \.php$ {

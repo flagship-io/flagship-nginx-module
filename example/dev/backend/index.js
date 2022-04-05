@@ -16,7 +16,8 @@ app.get('/with_module', (req, res) => {
 
 app.get('/without_module', (req, res) => {
 
-    Flagship.start("c0n48jn5thv01k0ijmo0", "BsIK86oh7c12c9G7ce4Wm1yBlWeaMf3t1S0xyYzI");
+    // replace envId & apiKey with your own flagship credentials
+    Flagship.start("envId", "apiKey");
 
     const visitor_id = req.get('x-visitor-id')
     const visitor_context = req.get('x-visitor-context')

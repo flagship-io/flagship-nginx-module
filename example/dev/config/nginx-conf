@@ -60,7 +60,8 @@ server {
 	server_name _;
 	error_log /var/log/nginx/error.log debug;
 	
-	fs_init 'c0n48jn5thv01k0ijmo0' 'BsIK86oh7c12c9G7ce4Wm1yBlWeaMf3t1S0xyYzI' '500' 'ERROR' '0';
+	# replace envId & apiKey with your own flagship credentials, for pollingInterval, logLevel, trackingEnabled check the documentation
+	fs_init 'envId' 'apiKey' 'pollingInterval' 'logLevel' 'trackingEnabled';
 	
 	location /with_module {
 
