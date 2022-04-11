@@ -20,7 +20,6 @@
 #define SDK_INIT "sdk init"
 #define FLAGSHIP_SDK_ENABLED 1
 
-static char *ngx_http_get_all_flags(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static char *ngx_http_get_visitor_id(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static char *ngx_http_get_visitor_context(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static ngx_int_t ngx_http_fs_sdk_variable(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data);
@@ -63,42 +62,32 @@ static ngx_str_t tracking_enabled_string;
 static void (*init_flagship)(char *, char *, int, char *, int);
 static char *(*get_all_flags)(char *, char *);
 #endif
+
 /**
- * This module provided directive: fs_init, fs_visitor_id, fs_visitor_context, fs_get_all_flags.
+ * This module provided directive: fs_init, fs_visitor_id, fs_visitor_context.
  *
  */
 static ngx_command_t ngx_http_fs_sdk_commands[] = {
 
     {ngx_string("fs_init"),                             /* directive */
-     NGX_HTTP_SRV_CONF | NGX_CONF_TAKE5,                /* location context and takes
-                                            no arguments*/
+     NGX_HTTP_SRV_CONF | NGX_CONF_TAKE5,                /* location context and takes no arguments*/
      ngx_http_add_params,                               /* configuration setup function */
      NGX_HTTP_SRV_CONF_OFFSET,                          /* No offset. Only one context is supported. */
      offsetof(ngx_http_fs_sdk_init_loc_conf_t, params), /* No offset when storing the module configuration on struct. */
      NULL},
 
-    {ngx_string("fs_visitor_id"),                                  /* directive */
-     NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,                           /* location context and takes
-                                            no arguments*/
-     ngx_http_get_visitor_id,                                       /* configuration setup function */
-     NGX_HTTP_LOC_CONF_OFFSET,                                     /* No offset. Only one context is supported. */
-     0,                                                            /* No offset when storing the module configuration on struct. */
+    {ngx_string("fs_visitor_id"),               /* directive */
+     NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,        /* location context and takes no arguments*/
+     ngx_http_get_visitor_id,                   /* configuration setup function */
+     NGX_HTTP_LOC_CONF_OFFSET,                  /* No offset. Only one context is supported. */
+     0,                                         /* No offset when storing the module configuration on struct. */
      NULL},
 
-    {ngx_string("fs_visitor_context"),                                  /* directive */
-     NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,                                /* location context and takes
-                                            no arguments*/
-     ngx_http_get_visitor_context,                                            /* configuration setup function */
-     NGX_HTTP_LOC_CONF_OFFSET,                                          /* No offset. Only one context is supported. */
-     0, /* No offset when storing the module configuration on struct. */
-     NULL},
-
-    {ngx_string("fs_get_all_flags"),      /* directive */
-     NGX_HTTP_LOC_CONF | NGX_CONF_NOARGS, /* location context and takes
-                                            no arguments*/
-     ngx_http_get_all_flags,              /* configuration setup function */
-     NGX_HTTP_LOC_CONF_OFFSET,            /* No offset. Only one context is supported. */
-     0,                                   /* No offset when storing the module configuration on struct. */
+    {ngx_string("fs_visitor_context"),          /* directive */
+     NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,        /* location context and takes no arguments*/
+     ngx_http_get_visitor_context,              /* configuration setup function */
+     NGX_HTTP_LOC_CONF_OFFSET,                  /* No offset. Only one context is supported. */
+     0,                                         /* No offset when storing the module configuration on struct. */
      NULL},
 
     ngx_null_command /* command termination */
@@ -356,30 +345,23 @@ static char *ngx_http_get_visitor_context(ngx_conf_t *cf, ngx_command_t *cmd, vo
     return NGX_CONF_OK;
 } /* ngx_http_get_visitor_context */
 
-static char *ngx_http_get_all_flags(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
-{
-    ngx_http_core_loc_conf_t *clcf; /* pointer to core location configuration */
-
-    clcf = ngx_http_conf_get_module_loc_conf(cf, ngx_http_core_module);
-    clcf->handler = ngx_http_fs_sdk_get_all_flags_handler;
-
-    return NGX_CONF_OK;
-} /* ngx_http_get_all_flags */
-
-
 static ngx_int_t ngx_http_fs_sdk_add_variables(ngx_conf_t *cf)
 {
     ngx_http_variable_t *var, *v;
+
     for (v = ngx_http_fs_sdk_vars; v->name.len; v++)
     {
         var = ngx_http_add_variable(cf, &v->name, v->flags);
+
         if (var == NULL)
         {
             return NGX_ERROR;
         }
+
         var->get_handler = v->get_handler;
         var->data = v->data;
     }
+    
     return NGX_OK;
 }
 
@@ -404,7 +386,7 @@ static ngx_int_t ngx_http_fs_sdk_variable(ngx_http_request_t *r, ngx_http_variab
     
     ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "visitor ID : %s", visitorId);
 
-    if (visitor_id.data == NULL)
+    if (visitorId == NULL)
     {
         ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "no visitor_id defined");
         exit(1);

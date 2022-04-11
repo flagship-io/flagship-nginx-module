@@ -67,7 +67,6 @@ server {
 
 		fs_visitor_id $request_id;
 		fs_visitor_context browser:$browser_type;
-		fs_get_all_flags;
 
 		set $visitor_context browser:$browser_type;
 
@@ -110,6 +109,16 @@ server {
 
 		proxy_pass http://originserver;	
 
+	}
+
+	location /without_cache {
+
+		fs_visitor_id $browser_type;
+		fs_visitor_context example:version1;
+
+		default_type text/html;
+
+		return 200 $fs_flags;
 	}
 
 	# pass PHP scripts to FastCGI server
