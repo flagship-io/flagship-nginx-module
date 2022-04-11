@@ -69,6 +69,9 @@ extern "C" {
 #endif
 
 extern void initFlagship(char* environmentID, char* apiKey, int polling, char* logLevel, int trackingEnabled);
+extern int getFlagBool(char* visitorID, char* contextString, char* key, int defaultValue, int activate);
+extern double getFlagNumber(char* visitorID, char* contextString, char* key, double defaultValue, int activate);
+extern char* getFlagString(char* visitorID, char* contextString, char* key, char* defaultValue, int activate);
 extern char* getAllFlags(char* visitorID, char* contextString);
 
 #ifdef __cplusplus
