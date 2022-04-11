@@ -6,28 +6,17 @@
 
 # Flagship Module for Nginx
 
-## Introduction
-
-Flagship IO perform the operation of feature management at the front-end level (JavaScript) or back-end level (web application languages such as Java, Android, iOS, PHP, TypeScript, etc ...). Many clients however employ significant caching strategies for performance reasons. Using this strategy prevent the HTTP requests to reach the back-end application servers, because a front-facing web server responds directly with a cached version in nginx of the requested page. Unfortunately in this case, the back-end SDKs cannot be used, since the logic of feature management that happens in the back-end application won't execute anyway. To put it another way, code that execute feature management techniques will never be executed.
-
-To solve this issue, we created the Flagship nginx module for one of the most popular web servers on the market today to provide a solution for this problem.
-At the web server level, this allows to determine which feature will be utilized by each visitor using Go wrapper for C, so that we can perform feature management in web sever level.
-As a result, the server can respond with a cached version of the proper variation using table key/value provided by nginx, allowing regular caching schemes to function normally.
-
-In brief, we introduce web experimentation at the web server level with this new module.
-This is a new level that sits in between the front-end and the nginx web server.
-
 ## Usage
 
 ### General concepts
 
-Since nginx is written in C language, we wrote our module flagship in C to achieve maximal performance, using native module and built-in module developement kit.
+Since Nginx is written in C language, we wrote our module flagship in C to achieve maximal performance, using native module and built-in module developement kit.
 The wrapper contains 2 major functions :
 
 - init_sdk which is the function that initialize the wrapper with environment_id, api_key, polling_interval, log_level, tracking_enabled
 - get_all_flags which is the function that return all flags based on specific visitor using visitor_id and visitor_context, and return a string that form flag_key:flag_value combination.
 
-The idea is to store the flag combination in cache table as a key, that refer to the page cached, so each time the visitor trigger a http request he will get the cached page version which corresponds to him.
+The idea is to store the flag combination in cache table as a key, that refer to the page cached, so each time the visitor trigger an http request he will get the cached page version which corresponds to him.
 
 ### Installation
 
@@ -50,7 +39,7 @@ load_module modules/ngx_http_fs_sdk_module.so;
 
 #### Building from nginx source
 
-To build the flagship module share object file you have to download the nginx source code in addition to some libraries in order to compile the C file into SO file that can be be used directly to your running nginx server ! [Here's a small tuto](https://flagship.io/)
+To build the flagship module share object file you have to download the nginx source code in addition to some libraries in order to compile the C file into SO file that can be be used directly to your running nginx server ! [Here's a small tutorial](https://flagship.io/)
 
 To link statically against nginx, cd to nginx source directory and execute:
 
@@ -66,7 +55,7 @@ To compile as a dynamic module (nginx 1.16.1+), cd to nginx source directory and
 
 #### Building from docker
 
-We have build and published a docker image that you can pull from [Dockerhub](https://hub.docker.com/repository/docker/flagshipio/nginx-module-builder) or simply run the command
+We have built and published a docker image that you can pull from [Dockerhub](https://hub.docker.com/repository/docker/flagshipio/nginx-module-builder) or simply run the command
 
 ```
 docker run --rm -t --name nginx-module-builder -e "NGINX_VERSION=1.20.2" \
@@ -81,7 +70,7 @@ Note that you are required to specify the nginx version you want to generate as 
 #### Building from Github action
 
 In order to run github action pipeline, you will have to fork the project and run it with your own runners. The pipeline generate an artifacts that include the shared object to inject in your nginx running server.
-Note that you have to choose your version in the dropbox or check the box to insert the nginx version that you want (Example: 1.8.6)
+Note that you have to choose your version in the dropbox or check the box to insert the nginx version that you want (Example: 1.18.0)
 **Warning** If the pipeline fails, please check that your version support nginx development kits !
 
 ### Configuration
@@ -111,13 +100,7 @@ Set the visitor id
 
 Set the visitor context
 
-#### fs_get_all_flags
-
-- **syntax**: `fs_get_all_flags;`
-- **default**: `none`
-- **context**: `location`
-
-Execute the function getAllFlags that return the flags based on visitor id and context but does not return it in nginx it rather store it in variable named `fs_flags` that you can use as a key/value in nginx cache table for feature management. (The variable is accessible with $fs_flags).
+Once you set the visitor id and context, the function getAllFlags is executed to return the flags based on visitor id and context but does not return it in nginx it rather store it in variable named `fs_flags` that you can use as a key/value in nginx cache table for feature management. (The variable is accessible with $fs_flags).
 Note that you have to initialize the sdk and set the visitor id and context before running get_all_flags directive.
 
 ### Running
@@ -134,7 +117,6 @@ http {
         location /variation1 {
             fs_visitor_id 'visitor_id_variation1';
 	        fs_visitor_context 'visitor_context_variation1';
-	        fs_get_all_flags;
 
             #Warning Flagship module don't come with built-in echo module, make sure to include one.
             echo $fs_flags;
@@ -143,7 +125,6 @@ http {
         location /variation2 {
             fs_visitor_id 'visitor_id_variation2';
 	        fs_visitor_context 'visitor_context_variation2';
-	        fs_get_all_flags;
 
             #Warning Flagship module don't come with built-in echo module, make sure to include one.
             echo $fs_flags;
@@ -241,13 +222,14 @@ server {
 	server_name _;
 	error_log /var/log/nginx/error.log debug;
 
-	fs_init 'c0n48jn5thv01k0ijmo0' 'BsIK86oh7c12c9G7ce4Wm1yBlWeaMf3t1S0xyYzI' '500' 'ERROR' '0';
+	# Replace envId & apiKey with your own flagship credentials, for pollingInterval, logLevel, trackingEnabled check the documentation
+	fs_init 'envId' 'apiKey' 'pollingInterval' 'logLevel' 'trackingEnabled';
 
-	location /with_module {
+	# Note that the cache here is not implemented, since we don't have any proxy_pass, this is just an example
+	location /with_cache {
 
 		fs_visitor_id $request_id;
 		fs_visitor_context browser:$browser_type;
-		fs_get_all_flags;
 
 		set $visitor_context browser:$browser_type;
 
@@ -255,7 +237,6 @@ server {
 		proxy_cache my_cache;
 		proxy_cache_valid any 10m;
 
-		add_header X-Proxy-Cache $upstream_cache_status;
 		add_header X-Flags $fs_flags;
 		add_header X-Browser_type $browser_type;
 
@@ -270,23 +251,14 @@ server {
 		return 200 $fs_flags;
 	}
 
-	location /without_module {
+    	location /without_cache {
 
-		proxy_buffering on;
-		proxy_cache my_cache;
-		proxy_cache_valid any 10m;
-
-		add_header X-Proxy-Cache $upstream_cache_status;
-
-		set $visitor_context browser:$browser_type;
-
-		proxy_set_header X-Visitor-Id $request_id;
-		proxy_set_header X-Visitor-Context $visitor_context;
+		fs_visitor_id $browser_type;
+		fs_visitor_context example:version1;
 
 		default_type text/html;
 
 		return 200 $fs_flags;
-
 	}
 
 	# pass PHP scripts to FastCGI server
