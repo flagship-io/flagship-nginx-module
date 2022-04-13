@@ -9,15 +9,12 @@ LABEL Author_name="Chadi LAOULAOU" Author_email="chadi.laoulaou@abtasty.com"
 ENV TZ=Europe/London \
     DEBIAN_FRONTEND=noninteractive
 
-# Update aptitude with new repo
 RUN apt-get update
-
-RUN apt-get update -y --fix-missing
 
 RUN apt-get upgrade -y
 
 # Install software 
-RUN apt-get update && apt-get install -y --allow-downgrades build-essential libbsd-dev wget libc-dev libunwind-dev make gcc libc6 zlib1g liblzma-dev liblzma5 libpcre3 libpcre3-dev libpcre++-dev zlib1g-dev libbz2-dev libxslt1-dev libxml2-dev libgeoip-dev libgoogle-perftools-dev libperl-dev libssl-dev libcurl4-openssl-dev libatomic-ops-dev
+RUN apt-get update && apt-get install -y build-essential libbsd-dev wget libc-dev libunwind-dev make gcc libc6 zlib1g liblzma-dev liblzma5 libpcre3 libpcre3-dev libpcre++-dev zlib1g-dev libbz2-dev libxslt1-dev libxml2-dev libgeoip-dev libgoogle-perftools-dev libperl-dev libssl-dev libcurl4-openssl-dev libatomic-ops-dev
 
 RUN mkdir work_directory
 
@@ -42,8 +39,6 @@ COPY --from=build-stage /usr/lib/flagship-module/ /usr/lib/nginx/modules/
 
 COPY --from=build-stage /usr/local/nginx/sbin/ /usr/local/nginx/sbin/
 
-RUN service nginx restart
-
-ENTRYPOINT ["/bin/bash"]
+RUN service nginx start
 
 
