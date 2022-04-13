@@ -154,7 +154,7 @@ docker run --rm -it -p 8080:80 -t --name nginx-standalone \
  flagshipio/nginx:nginx-1.20.2
 ```
 
-**Or** To have a nginx configuration example and run :
+**Or** run:
 
 ```
 ./example/standalone/run.sh
