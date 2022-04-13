@@ -147,14 +147,14 @@ To run the example that include running nginx server that implement caching syst
 ./example/dev/run.sh
 ```
 
-To run the example that include running nginx server that implement caching system with flagship module and return the flag you can pull our image from [Dockerhub](https://hub.docker.com/repository/docker/flagshipio/nginx) and run:
+To run the example that include running nginx server with flagship module you can pull our image from [Dockerhub](https://hub.docker.com/repository/docker/flagshipio/nginx) and run:
 
 ```
 docker run --rm -it -p 8080:80 -t --name nginx-standalone \
  flagshipio/nginx:nginx-1.20.2
 ```
 
-**Or** run:
+**Or** To have a nginx configuration example and run :
 
 ```
 ./example/standalone/run.sh
