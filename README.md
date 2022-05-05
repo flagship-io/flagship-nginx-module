@@ -6,11 +6,11 @@ Adds the ability to feature management in web server level.
 
 To link statically against nginx, cd to nginx source directory and execute:
 
-    ./configure --with compat --add-module=/path/to/flagship-nginx-module --with-pcre
+    ./configure --with-compat --add-module=/path/to/flagship-nginx-module --with-pcre
 
 To compile as a dynamic module (nginx 1.9.11+), use:
   
-	./configure --with compat --add-dynamic-module=/path/to/flagship-nginx-module --with-pcre
+	./configure --with-compat --add-dynamic-module=/path/to/flagship-nginx-module --with-pcre
 
 In this case, the `load_module` directive should be used in nginx.conf to load the module.
 

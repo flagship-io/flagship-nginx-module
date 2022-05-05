@@ -1,0 +1,71 @@
+# This is a workflow to upload flagship module depending on nginx version
+
+name: CI-nginx
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        type: choice
+        description: Nginx version for the module
+        options:
+          - 1.18.0
+          - 1.19.0
+          - 1.20.2
+          - 1.16.1
+
+      message:
+        required: false
+        description: Nginx version
+      use-message:
+        type: boolean
+        description: You can't find your version use input instead "(Example 1.18.6)"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create nginx sbin folder
+        run: |
+          sudo mkdir -p /usr/local/nginx/sbin/
+
+      - uses: actions/checkout@v2
+
+      - name: Run a update
+        run: sudo apt-get update -y --fix-missing
+
+      - name: Run a upgrade
+        run: sudo apt-get upgrade -y
+
+      - name: Install essential
+        run: sudo apt-get install -y --allow-downgrades curl build-essential uuid-dev inotify-tools libbsd-dev libgd-dev wget libc-dev libunwind-dev make gcc libc6 zlib1g=1:1.2.11.dfsg-2ubuntu1.2 liblzma-dev liblzma5=5.2.4-1ubuntu1 libpcre3 libpcre3-dev libpcre++-dev zlib1g-dev libbz2-dev libxslt1-dev libxml2-dev libxml2 libgeoip-dev libgoogle-perftools-dev libperl-dev libssl-dev libcurl4-openssl-dev libatomic-ops-dev
+
+      - name: Import nginx
+        run: sudo wget http://nginx.org/download/nginx-${{ (github.event.inputs.use-message == 'true' && github.event.inputs.message) || github.event.inputs.name}}.tar.gz
+
+      - name: Extract tar and do installation proccess
+        run: sudo tar zxf nginx-${{ (github.event.inputs.use-message == 'true' && github.event.inputs.message) || github.event.inputs.name }}.tar.gz
+
+      - name: Run installation proccess
+        working-directory: ./nginx-${{ (github.event.inputs.use-message == 'true' && github.event.inputs.message) || github.event.inputs.name }}
+        run: |
+          sudo ./configure
+          sudo make
+          sudo make install
+
+      - name: Copy src lib to local nginx
+        run: |
+          sudo cp ${{ github.workspace }}/src/libflagship.so /usr/local/nginx/sbin/
+
+      - name: Make the module
+        working-directory: ./nginx-${{ (github.event.inputs.use-message == 'true' && github.event.inputs.message) || github.event.inputs.name }}
+        run: |
+          sudo ./configure --with-compat --add-dynamic-module=../src --with-pcre
+          sudo make modules
+
+      - name: Upload the module
+        uses: actions/upload-artifact@v3
+        with:
+          name: ngx_http_fs_module_nginx-${{ (github.event.inputs.use-message == 'true' && github.event.inputs.message) || github.event.inputs.name }}
+          path: nginx-${{ (github.event.inputs.use-message == 'true' && github.event.inputs.message) || github.event.inputs.name }}/objs/ngx_http_fs_sdk_module.so

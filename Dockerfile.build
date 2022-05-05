@@ -1,0 +1,27 @@
+FROM ubuntu
+
+LABEL Author_name="Chadi LAOULAOU" Author_email="chadi.laoulaou@abtasty.com"
+
+ENV TZ=Europe/London \
+    DEBIAN_FRONTEND=noninteractive\
+    NGINX_VERSION=1.18.0
+
+RUN apt-get update
+
+RUN apt-get upgrade -y
+
+# Install software 
+RUN apt-get install -y build-essential libbsd-dev wget libc-dev libunwind-dev make gcc libc6 zlib1g liblzma-dev liblzma5 libpcre3 libpcre3-dev libpcre++-dev zlib1g-dev libbz2-dev libxslt1-dev libxml2-dev libgeoip-dev libgoogle-perftools-dev libperl-dev libssl-dev libcurl4-openssl-dev libatomic-ops-dev
+
+RUN mkdir work_directory
+
+WORKDIR /work_directory
+
+COPY ./src/libflagship.so /usr/local/nginx/sbin/libflagship.so
+
+COPY ./src /work_directory/ngx_http_fs_sdk_module
+
+COPY ./fs-nginx-module/build.sh ./build.sh
+RUN chmod +x ./build.sh
+
+CMD ["./build.sh"]
