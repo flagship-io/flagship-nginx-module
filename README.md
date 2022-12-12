@@ -39,7 +39,7 @@ load_module modules/ngx_http_fs_sdk_module.so;
 
 #### Building from nginx source
 
-To build the flagship module share object file you have to download the nginx source code in addition to some libraries in order to compile the C file into SO file that can be be used directly to your running nginx server ! [Here's a small tutorial](https://flagship.io/)
+To build the flagship module share object file you have to download the nginx source code in addition to some libraries in order to compile the C file into SO file that can be be used directly to your running nginx server ! [Here's a small tutorial](https://dev.to/armanism24/how-to-build-nginx-from-source-code-on-ubuntu-20-04-31e5/)
 
 To link statically against nginx, cd to nginx source directory and execute:
 
